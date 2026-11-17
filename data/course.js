@@ -39,7 +39,9 @@ window.COURSE = {
       chapters: [
         {
           id: "p3-1", title: "波動",
+          startAt: 0,   // 這一章的小節從 1-0 開始編號（不寫則從 1 開始）
           lessons: [
+            { id: "p3-1-0", title: "暖身：簡諧運動是波嗎？", file: "lessons/p3-1-0-shm.html", form: "" },
             { id: "p3-1-1", title: "行進波與介質質點的振動", file: "lessons/p3-1-1-traveling-wave.html", form: "" },
             { id: "p3-1-2", title: "週期波：波長、頻率與波速", file: "lessons/p3-1-2-periodic-wave.html", form: "" },
             { id: "p3-1-3", title: "波的反射與透射" },

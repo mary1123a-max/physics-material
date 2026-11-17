@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>簡諧運動與 y–t 圖</title>
+<style>
+  :root{--bg:#f5f7fa;--card:#fff;--ink:#1d2733;--muted:#6b7785;--line:#e3e8ee;--wave:#0f7c8c;--p:#d6336c;--accent:#5b3cc4;--accent-soft:#efeafd}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei","Noto Sans TC","Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1040px;margin:0 auto;padding:18px 14px 40px}
+  h1{font-size:1.35rem;margin:4px 0 2px}
+  .sub{color:var(--muted);font-size:.92rem;margin:0 0 14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+  canvas{display:block;width:100%}
+  .cap{font-size:.86rem;color:var(--muted);margin:0 2px 6px}
+  .cap b{color:var(--ink)}
+  .say{font-size:.95rem;background:#fff6e8;border:1px solid #f5dfb8;border-radius:10px;padding:8px 12px;margin-top:8px}
+  .timebar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--accent-soft);border:1px solid #ddd3fb;border-radius:14px;padding:10px 12px;margin-bottom:12px}
+  .timebar .tv{font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;margin-left:auto}
+  .btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit;font-size:.9rem;font-weight:600;cursor:pointer;line-height:1;min-height:38px}
+  .btn:hover{background:#f3f5f8}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px 20px}
+  .ctl label{display:flex;justify-content:space-between;align-items:baseline;font-size:.86rem;color:var(--muted);margin-bottom:4px}
+  .ctl label span.v{color:var(--ink);font-weight:700;font-size:.98rem;font-variant-numeric:tabular-nums}
+  .ctl .row{display:flex;align-items:center;gap:6px}
+  .ctl .row input{flex:1}
+  .ctl .row .btn{min-height:32px;width:32px;padding:0}
+  input[type=range]{accent-color:var(--wave);height:28px}
+  .toggles{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);font-size:.9rem;align-items:center}
+  .toggles label{display:flex;align-items:center;gap:6px;cursor:pointer}
+  .toggles input{width:18px;height:18px;accent-color:var(--wave)}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex-wrap:wrap}
+  .seg button{border:0;background:#fff;padding:8px 12px;font:inherit;font-size:.86rem;font-weight:600;cursor:pointer;color:var(--muted);border-right:1px solid var(--line)}
+  .seg button:last-child{border-right:0}
+  .seg button.on{background:var(--wave);color:#fff}
+  .readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .ro{background:#f3faf9;border:1px solid #d6ecea;border-radius:12px;padding:9px 11px}
+  .ro .k{font-size:.78rem;color:var(--muted)}
+  .ro .val{font-size:1.1rem;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+  .ro.p{background:#fdf2f6;border-color:#f6d3e0}
+  html.embedded .standalone-only{display:none}
+  html.embedded body{background:transparent}
+  html.embedded .wrap{padding:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="standalone-only">簡諧運動與 y–t 圖</h1>
+  <p class="sub standalone-only">一個質點在原地上下振動。把它每個時刻的位置記錄下來，會畫出什麼圖？</p>
+
+  <div class="card">
+    <p class="cap" id="cap1"></p>
+    <canvas id="cv" aria-label="左側為上下做簡諧運動的質點，右側為它的位移對時間圖"></canvas>
+  </div>
+
+  <div class="card" id="rowCard" style="display:none">
+    <p class="cap"><b>一排質點</b>：橫軸是<b>位置 x</b>（不是時間）。紅色那一顆就是上面的質點。</p>
+    <canvas id="cv2" aria-label="一排質點的位置圖"></canvas>
+    <div class="say" id="say"></div>
+  </div>
+
+  <div class="timebar">
+    <button class="btn primary" id="play" style="min-width:92px">❚❚ 暫停</button>
+    <button class="btn" id="reset">↺ 重新開始</button>
+    <span class="tv" id="tv"></span>
+  </div>
+
+  <div class="card">
+    <div class="controls">
+      <div class="ctl"><label>振幅 A <span class="v" id="vA"></span></label>
+        <div class="row"><button class="btn" data-step="A:-1">−</button><input type="range" id="A" min="0.5" max="3" step="0.5"><button class="btn" data-step="A:1">＋</button></div></div>
+      <div class="ctl"><label>頻率 f（每秒振動幾次） <span class="v" id="vf"></span></label>
+        <div class="row"><button class="btn" data-step="f:-1">−</button><input type="range" id="f" min="0.2" max="1.5" step="0.1"><button class="btn" data-step="f:1">＋</button></div></div>
+    </div>
+    <div class="toggles">
+      <label><input type="checkbox" id="showG" checked> 畫出 y–t 圖</label>
+      <label><input type="checkbox" id="showM" checked> 標示振幅與週期</label>
+      <div class="seg" id="mode" role="group" aria-label="質點數量">
+        <button data-m="one" class="on">只有一個質點</button>
+        <button data-m="sync">一排質點・同時振動</button>
+        <button data-m="delay">一排質點・依序慢一點</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="readouts">
+      <div class="ro"><div class="k">週期 T（振動一次的時間）</div><div class="val" id="rT"></div></div>
+      <div class="ro"><div class="k">頻率 f</div><div class="val" id="rF"></div></div>
+      <div class="ro p"><div class="k">此刻位移 y</div><div class="val" id="rY"></div></div>
+      <div class="ro p"><div class="k">此刻運動</div><div class="val" id="rS" style="font-size:1rem"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* 被嵌入單元頁時：隱藏標題並回報高度給外層頁面 */
+(function(){
+  if (window.parent === window) return;
+  document.documentElement.classList.add("embedded");
+  const send = () => window.parent.postMessage({type:"sim-height", h: document.documentElement.scrollHeight}, "*");
+  window.addEventListener("load", send);
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+(function(){
+  const Y_MAX = 3.5, WIN = 10, X_MAX = 40, V = 8, TAU = Math.PI*2;
+  const C = {wave:'#0f7c8c', p:'#d6336c', grid:'#e6ebf0', axis:'#9aa6b2', text:'#6b7785', per:'#5b3cc4', dot:'#0b5561'};
+  const S = {A:2, f:0.5, t:0, playing:true, showG:true, showM:true, mode:'one'};
+  const $ = id => document.getElementById(id);
+  const cv = $('cv'), ctx = cv.getContext('2d'), cv2 = $('cv2'), ctx2 = cv2.getContext('2d');
+  let G = {}, G2 = {};
+  const w0 = () => TAU*S.f;
+  const Y = t => S.A*Math.sin(w0()*t), VY = t => S.A*w0()*Math.cos(w0()*t);
+  const fmt = (n,d=2) => (Math.abs(n) < 0.5*Math.pow(10,-d) ? 0 : n).toFixed(d);
+
+  function fit(c, cx, H){
+    const dpr = window.devicePixelRatio || 1, w = c.parentElement.clientWidth - 28;
+    c.style.height = H + 'px'; c.width = Math.round(w*dpr); c.height = Math.round(H*dpr); cx.setTransform(dpr,0,0,dpr,0,0);
+    return w;
+  }
+  function resize(){
+    let w = fit(cv, ctx, 300); const small = w < 600;
+    const sw = small ? 64 : 110, ml = sw + (small ? 30 : 44), mr = 14, mt = 30, mb = 30;
+    G = {w, H:300, sw, ml, mr, mt, iw:w-ml-mr, ih:300-mt-mb, small}; G.mid = mt + G.ih/2; G.sy = (G.ih/2)/Y_MAX;
+    if(S.mode !== 'one'){
+      w = fit(cv2, ctx2, 210);
+      G2 = {w, H:210, ml: small ? 30 : 44, mr:14, mt:14, ih:210-14-30}; G2.iw = w - G2.ml - G2.mr; G2.mid = G2.mt + G2.ih/2; G2.sy = (G2.ih/2)/Y_MAX;
+    }
+    draw();
+  }
+  const py = y => G.mid - y*G.sy;
+
+  function hBracket(c, x1, x2, y, color, text){
+    c.strokeStyle = color; c.lineWidth = 1.5;
+    c.beginPath(); c.moveTo(x1,y-5); c.lineTo(x1,y+5); c.moveTo(x2,y-5); c.lineTo(x2,y+5); c.moveTo(x1,y); c.lineTo(x2,y); c.stroke();
+    c.font = '700 12px system-ui, sans-serif'; c.textAlign='center'; c.textBaseline='bottom';
+    const tw = c.measureText(text).width + 8, cx = (x1+x2)/2;
+    c.fillStyle = 'rgba(255,255,255,.92)'; c.fillRect(cx-tw/2, y-19, tw, 15); c.fillStyle = color; c.fillText(text, cx, y-4);
+  }
+
+  function drawMain(){
+    const t = S.t, y = Y(t), T = 1/S.f;
+    ctx.clearRect(0,0,G.w,G.H);
+    // --- particle strip ---
+    const cx = G.sw/2;
+    ctx.fillStyle = '#fbfcfd'; ctx.fillRect(4, G.mt, G.sw-8, G.ih);
+    ctx.strokeStyle = C.axis; ctx.lineWidth = 1; ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(8,G.mid); ctx.lineTo(G.sw-8,G.mid); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = 'rgba(214,51,108,.16)'; ctx.lineWidth = 10; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(cx,py(S.A)); ctx.lineTo(cx,py(-S.A)); ctx.stroke(); ctx.lineCap='butt';
+    ctx.fillStyle = C.text; ctx.font='11px system-ui, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.fillText('質點', cx, G.mt-6);
+    if(!G.small){ ctx.textBaseline='middle'; ctx.textAlign='left'; ctx.fillText('平衡', 8, G.mid-9); }
+
+    if(S.showG){
+      // --- graph ---
+      ctx.fillStyle = '#fbfcfd'; ctx.fillRect(G.ml,G.mt,G.iw,G.ih);
+      const t0 = Math.max(0, t - WIN), tx = tt => G.ml + (tt-t0)/WIN*G.iw;
+      ctx.strokeStyle = C.grid; ctx.lineWidth = 1; ctx.fillStyle = C.text; ctx.font='11px system-ui, sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='top';
+      for(let tt=Math.ceil(t0); tt<=t0+WIN+1e-9; tt++){ ctx.beginPath(); ctx.moveTo(tx(tt),G.mt); ctx.lineTo(tx(tt),G.mt+G.ih); ctx.stroke(); ctx.fillText(tt,tx(tt),G.mt+G.ih+4); }
+      ctx.textAlign='right'; ctx.fillText('時間 t (s)', G.ml+G.iw, G.mt+G.ih+17);
+      ctx.textBaseline='middle';
+      for(let yy=-3;yy<=3;yy++){ ctx.fillText(yy, G.ml-6, py(yy)); }
+      ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText('位移 y (cm)', G.ml, G.mt-6);
+      ctx.strokeStyle = C.axis; ctx.beginPath(); ctx.moveTo(G.ml,G.mid); ctx.lineTo(G.ml+G.iw,G.mid); ctx.stroke();
+      if(S.showM){
+        ctx.strokeStyle = C.wave; ctx.setLineDash([2,3]);
+        ctx.beginPath(); ctx.moveTo(G.ml,py(S.A)); ctx.lineTo(G.ml+G.iw,py(S.A)); ctx.moveTo(G.ml,py(-S.A)); ctx.lineTo(G.ml+G.iw,py(-S.A)); ctx.stroke(); ctx.setLineDash([]);
+      }
+      const n = Math.max(2, Math.round((t-t0)/WIN*G.iw));
+      ctx.strokeStyle = C.p; ctx.lineWidth = 2.6; ctx.beginPath();
+      for(let i=0;i<=n;i++){ const tt=t0+(t-t0)*i/n; i?ctx.lineTo(tx(tt),py(Y(tt))):ctx.moveTo(tx(tt),py(Y(tt))); }
+      ctx.stroke();
+      if(S.showM){
+        const k = Math.ceil((t0 - T/4)/T - 1e-9), p1 = T/4 + k*T, p2 = p1 + T;
+        if(p2 <= t + 1e-9) hBracket(ctx, tx(p1), tx(p2), Math.max(py(S.A)-12, G.mt+16), C.per, 'T = ' + fmt(T,2) + ' s');
+        if(t > T/4){ // amplitude marker
+          const ax = tx(Math.max(p1, t0)) ; ctx.strokeStyle = C.wave; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.moveTo(G.ml+10,G.mid); ctx.lineTo(G.ml+10,py(S.A)); ctx.moveTo(G.ml+5,py(S.A)); ctx.lineTo(G.ml+15,py(S.A)); ctx.stroke();
+          ctx.fillStyle = C.wave; ctx.font='700 12px system-ui, sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText('A', G.ml+18, (G.mid+py(S.A))/2);
+        }
+      }
+      // connector: particle → pen
+      ctx.strokeStyle = 'rgba(214,51,108,.45)'; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+      ctx.beginPath(); ctx.moveTo(cx+9,py(y)); ctx.lineTo(tx(t),py(y)); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = C.p; ctx.strokeStyle='#fff'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(tx(t),py(y),5.5,0,TAU); ctx.fill(); ctx.stroke();
+    }
+    // particle
+    ctx.fillStyle = C.p; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(cx,py(y),10,0,TAU); ctx.fill(); ctx.stroke();
+  }
+
+  function drawRow(){
+    const c = ctx2, g = G2, t = S.t;
+    const px = x => g.ml + x/X_MAX*g.iw, qy = y => g.mid - y*g.sy;
+    c.clearRect(0,0,g.w,g.H); c.fillStyle = '#fbfcfd'; c.fillRect(g.ml,g.mt,g.iw,g.ih);
+    c.strokeStyle = C.grid; c.lineWidth = 1; c.fillStyle = C.text; c.font='11px system-ui, sans-serif'; c.textAlign='center'; c.textBaseline='top';
+    for(let x=0;x<=X_MAX;x+=5){ c.beginPath(); c.moveTo(px(x),g.mt); c.lineTo(px(x),g.mt+g.ih); c.stroke(); c.fillText(x,px(x),g.mt+g.ih+4); }
+    c.textAlign='right'; c.fillText('位置 x (cm)', g.ml+g.iw, g.mt+g.ih+17);
+    c.textBaseline='middle'; for(let yy=-3;yy<=3;yy+=1) c.fillText(yy, g.ml-6, qy(yy));
+    c.strokeStyle = C.axis; c.beginPath(); c.moveTo(g.ml,g.mid); c.lineTo(g.ml+g.iw,g.mid); c.stroke();
+    const yi = x => S.mode === 'sync' ? Y(t) : Y(t - x/V);
+    for(let x=0;x<=X_MAX;x+=2){
+      c.strokeStyle = x ? 'rgba(11,85,97,.10)' : 'rgba(214,51,108,.16)'; c.lineWidth = 7; c.lineCap='round';
+      c.beginPath(); c.moveTo(px(x),qy(S.A)); c.lineTo(px(x),qy(-S.A)); c.stroke(); c.lineCap='butt';
+    }
+    for(let x=0;x<=X_MAX;x+=2){
+      c.fillStyle = x ? C.dot : C.p; c.strokeStyle = '#fff'; c.lineWidth = 2;
+      c.beginPath(); c.arc(px(x),qy(yi(x)), x ? 6 : 8, 0, TAU); c.fill(); c.stroke();
+    }
+    $('say').innerHTML = S.mode === 'sync'
+      ? '每個質點都在做簡諧運動，而且<b>動作完全同步</b>。有沒有什麼東西從左邊「傳」到右邊？'
+      : '每個質點做的是<b>同樣的</b>簡諧運動，但右邊的比左邊的<b>晚一點</b>。看起來有什麼東西在往右移動？';
+  }
+
+  function draw(){
+    if(!G.w) return;
+    drawMain(); if(S.mode !== 'one') drawRow();
+    const y = Y(S.t), v = VY(S.t), r = v/(S.A*w0());
+    $('tv').textContent = 't = ' + S.t.toFixed(2) + ' s';
+    $('rT').textContent = fmt(1/S.f,2) + ' s'; $('rF').textContent = fmt(S.f,1) + ' Hz'; $('rY').textContent = fmt(y,2) + ' cm';
+    $('rS').textContent = Math.abs(r) < 0.06 ? (y > 0 ? '最高點，瞬間靜止' : '最低點，瞬間靜止') : (v > 0 ? '向上 ↑' : '向下 ↓');
+  }
+  function syncUI(){
+    $('A').value = S.A; $('f').value = S.f; $('vA').textContent = fmt(S.A,1) + ' cm'; $('vf').textContent = fmt(S.f,1) + ' Hz';
+    $('play').textContent = S.playing ? '❚❚ 暫停' : '▶ 播放';
+    $('cap1').innerHTML = S.showG ? '左邊：質點在原地上下振動。右邊：把它<b>每個時刻</b>的位置記錄下來（橫軸是<b>時間 t</b>）。' : '一個質點在原地上下振動。';
+    $('rowCard').style.display = S.mode === 'one' ? 'none' : '';
+    document.querySelectorAll('#mode button').forEach(b => b.classList.toggle('on', b.dataset.m === S.mode));
+  }
+  ['A','f'].forEach(id => $(id).addEventListener('input', e => { S[id] = parseFloat(e.target.value); S.t = 0; syncUI(); draw(); }));
+  document.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => {
+    const [id,dir] = b.dataset.step.split(':'), el = $(id);
+    S[id] = parseFloat(Math.min(+el.max, Math.max(+el.min, S[id] + (+el.step)*(+dir))).toFixed(2)); S.t = 0; syncUI(); draw();
+  }));
+  $('showG').addEventListener('change', e => { S.showG = e.target.checked; syncUI(); draw(); });
+  $('showM').addEventListener('change', e => { S.showM = e.target.checked; draw(); });
+  document.querySelectorAll('#mode button').forEach(b => b.addEventListener('click', () => { S.mode = b.dataset.m; syncUI(); resize(); }));
+  $('play').addEventListener('click', () => { S.playing = !S.playing; last = performance.now(); syncUI(); });
+  $('reset').addEventListener('click', () => { S.t = 0; S.playing = true; last = performance.now(); syncUI(); draw(); });
+
+  let last = performance.now();
+  function loop(now){
+    const dt = Math.min(0.1,(now-last)/1000); last = now;
+    if(S.playing){ S.t += dt; draw(); }
+    requestAnimationFrame(loop);
+  }
+  window.addEventListener('resize', resize);
+  syncUI(); resize(); requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

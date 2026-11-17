@@ -15,9 +15,11 @@ data/
   questions.js        ★ 題庫：所有檢核題
 lessons/
   template.html       ★ 新增小節時複製這個範本
+  p3-1-0-shm.html              1-0 暖身：簡諧運動是波嗎？
   p3-1-1-traveling-wave.html   1-1 行進波與介質質點的振動
   p3-1-2-periodic-wave.html    1-2 週期波：波長、頻率與波速
 sims/
+  shm.html            模擬：簡諧運動與 y–t 圖（可切換成一排質點）
   traveling-wave.html 模擬：行進波與介質質點（可單獨開啟，也可嵌入單元頁）
   wave-speed.html     模擬：為什麼 v = fλ（標記波峰、火車比喻、數據紀錄）
 assets/

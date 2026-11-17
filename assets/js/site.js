@@ -32,7 +32,7 @@
   /* ---------- 把課程目錄攤平，方便查找 ---------- */
   const LESSONS = [];
   COURSE.courses.forEach(c => (c.chapters || []).forEach((ch, ci) => (ch.lessons || []).forEach((l, li) => {
-    LESSONS.push({ course: c, chapter: ch, lesson: l, ci, li, num: (ci + 1) + "-" + (li + 1) });
+    LESSONS.push({ course: c, chapter: ch, lesson: l, ci, li, num: (ci + 1) + "-" + (li + (ch.startAt != null ? ch.startAt : 1)) });
   })));
   const findLesson = id => LESSONS.find(x => x.lesson.id === id);
   const qOf = lessonId => QUESTIONS.filter(q => q.lesson === lessonId);
@@ -185,7 +185,7 @@
         else {
           const ul = h("ul", { class: "lesson-list" });
           ch.lessons.forEach((l, li) => {
-            const num = (ci + 1) + "-" + (li + 1);
+            const num = (ci + 1) + "-" + (li + (ch.startAt != null ? ch.startAt : 1));
             const st = lessonStats(l.id);
             let pill = !l.file ? '<span class="pill soon">準備中</span>' :
               P.done[l.id] ? '<span class="pill ok">✓ 已理解</span>' :
