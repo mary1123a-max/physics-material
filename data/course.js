@@ -41,7 +41,7 @@ window.COURSE = {
           id: "p3-1", title: "波動",
           lessons: [
             { id: "p3-1-1", title: "行進波與介質質點的振動", file: "lessons/p3-1-1-traveling-wave.html", form: "" },
-            { id: "p3-1-2", title: "週期波：波長、頻率與波速" },
+            { id: "p3-1-2", title: "週期波：波長、頻率與波速", file: "lessons/p3-1-2-periodic-wave.html", form: "" },
             { id: "p3-1-3", title: "波的反射與透射" },
             { id: "p3-1-4", title: "波的疊加與駐波" },
             { id: "p3-1-5", title: "惠更斯原理與繞射" },

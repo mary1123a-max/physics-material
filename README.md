@@ -15,9 +15,11 @@ data/
   questions.js        ★ 題庫：所有檢核題
 lessons/
   template.html       ★ 新增小節時複製這個範本
-  p3-1-1-traveling-wave.html   示範單元：行進波與介質質點的振動
+  p3-1-1-traveling-wave.html   1-1 行進波與介質質點的振動
+  p3-1-2-periodic-wave.html    1-2 週期波：波長、頻率與波速
 sims/
-  traveling-wave.html 互動模擬（可單獨開啟，也可嵌入單元頁）
+  traveling-wave.html 模擬：行進波與介質質點（可單獨開啟，也可嵌入單元頁）
+  wave-speed.html     模擬：為什麼 v = fλ（標記波峰、火車比喻、數據紀錄）
 assets/
   css/site.css        共用外觀
   js/site.js          共用程式（一般不用改）
