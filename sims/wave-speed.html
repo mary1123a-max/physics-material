@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>為什麼 v = fλ？1 秒內送出幾個波</title>
+<style>
+  :root{--bg:#f5f7fa;--card:#fff;--ink:#1d2733;--muted:#6b7785;--line:#e3e8ee;--wave:#0f7c8c;--p:#d6336c;--mark:#e8890c;--accent:#5b3cc4;--accent-soft:#efeafd}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei","Noto Sans TC","Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1040px;margin:0 auto;padding:18px 14px 40px}
+  h1{font-size:1.35rem;margin:4px 0 2px}
+  .sub{color:var(--muted);font-size:.92rem;margin:0 0 14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+  canvas{display:block;width:100%}
+  .sec-title{font-size:.86rem;color:var(--muted);margin:0 2px 5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px}
+  .sec-title b{color:var(--ink)}
+  .secbar{display:flex;gap:3px;height:26px;margin-bottom:10px}
+  .secbar .cell{flex:1;background:#eceff3;border-radius:6px;position:relative;overflow:hidden;min-width:0}
+  .secbar .cell i{position:absolute;left:0;top:0;bottom:0;background:var(--p);opacity:.8}
+  .secbar .cell span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.76rem;font-weight:700;color:#3b4652;white-space:nowrap}
+  .secbar .cell.full span{color:#fff}
+  .eq{font-size:1.02rem;line-height:1.6;background:#fff6e8;border:1px solid #f5dfb8;border-radius:10px;padding:9px 12px;margin-top:10px;font-variant-numeric:tabular-nums}
+  .eq.done{background:#eaf6ee;border-color:#bfe0cb}
+  .eq b{color:#8a5200} .eq.done b{color:#1f7a45}
+  .eq .big{font-size:1.15rem}
+  .timebar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--accent-soft);border:1px solid #ddd3fb;border-radius:14px;padding:10px 12px;margin-bottom:12px}
+  .timebar .sp{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:.85rem;color:var(--muted);white-space:nowrap}
+  .timebar .sp input{width:100px}
+  .btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit;font-size:.9rem;font-weight:600;cursor:pointer;line-height:1;min-height:38px}
+  .btn:hover{background:#f3f5f8}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{background:#4a2fb0}
+  .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px 20px}
+  .ctl label{display:flex;justify-content:space-between;align-items:baseline;font-size:.86rem;color:var(--muted);margin-bottom:4px}
+  .ctl label span.v{color:var(--ink);font-weight:700;font-size:.98rem;font-variant-numeric:tabular-nums}
+  .ctl .row{display:flex;align-items:center;gap:6px}
+  .ctl .row input{flex:1}
+  .ctl .row .btn{min-height:32px;width:32px;padding:0}
+  input[type=range]{accent-color:var(--wave);height:28px}
+  .toggles{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);font-size:.9rem}
+  .toggles label{display:flex;align-items:center;gap:6px;cursor:pointer}
+  .toggles input{width:18px;height:18px;accent-color:var(--wave)}
+  .readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+  .ro{background:#f3faf9;border:1px solid #d6ecea;border-radius:12px;padding:9px 11px}
+  .ro .k{font-size:.78rem;color:var(--muted)}
+  .ro .val{font-size:1.1rem;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+  .ro.t{background:#f6f2fd;border-color:#e2d7f7} .ro.x{background:#fff6e8;border-color:#f5dfb8} .ro.p{background:#fdf2f6;border-color:#f6d3e0}
+  table{border-collapse:collapse;width:100%;font-size:.92rem;font-variant-numeric:tabular-nums}
+  th,td{border:1px solid var(--line);padding:6px 10px;text-align:center}
+  th{background:#f3f6f8}
+  h2{font-size:1.02rem;margin:0 0 8px}
+  .rowbtn{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;align-items:center}
+  .foot{font-size:.78rem;color:var(--muted);margin:8px 0 0}
+  html.embedded .standalone-only{display:none}
+  html.embedded body{background:transparent}
+  html.embedded .wrap{padding:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="standalone-only">為什麼 v = fλ？</h1>
+  <p class="sub standalone-only">波源每秒振動 f 次，就送出 f 個波。每個波長 λ，一個接一個排出去，1 秒後波前走了多遠？</p>
+
+  <div class="card">
+    <div class="sec-title"><span><b>1 秒鐘</b> ＝ 波源振動 <b id="fTxt"></b> 次（每振動 1 次，送出 1 個完整的波）</span><span id="tTxt"></span></div>
+    <div class="secbar" id="secbar"></div>
+    <canvas id="cv" aria-label="波源送出的波一個接一個向右排出，波前向右前進"></canvas>
+    <div class="eq" id="eq"></div>
+  </div>
+
+  <div class="timebar">
+    <button class="btn primary" id="play">▶ 播放 1 秒</button>
+    <button class="btn" id="minus">◀ 少 1 個波</button>
+    <button class="btn" id="plus">多 1 個波 ▶</button>
+    <button class="btn" id="reset">↺ 歸零</button>
+    <div class="sp">慢動作 <input type="range" id="speed" min="0.05" max="0.5" step="0.05" value="0.1"> <b id="speedVal" style="color:var(--ink)"></b></div>
+  </div>
+
+  <div class="card">
+    <div class="controls">
+      <div class="ctl"><label>頻率 f（波源每秒振動幾次） <span class="v" id="vf"></span></label>
+        <div class="row"><button class="btn" data-step="f:-1">−</button><input type="range" id="f" min="1" max="10" step="1"><button class="btn" data-step="f:1">＋</button></div></div>
+      <div class="ctl"><label>介質波速 v（換一條繩子） <span class="v" id="vv"></span></label>
+        <div class="row"><button class="btn" data-step="v:-1">−</button><input type="range" id="v" min="20" max="40" step="5"><button class="btn" data-step="v:1">＋</button></div></div>
+    </div>
+    <div class="toggles">
+      <label><input type="checkbox" id="train" checked> 🚆 火車比喻</label>
+      <label><input type="checkbox" id="bands" checked> 幫每個波上色、編號</label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="readouts">
+      <div class="ro t"><div class="k">經過時間 t</div><div class="val" id="rT"></div></div>
+      <div class="ro p"><div class="k">波源已振動（已送出的波）</div><div class="val" id="rN"></div></div>
+      <div class="ro"><div class="k">每個波的長度 λ</div><div class="val" id="rL"></div></div>
+      <div class="ro x"><div class="k">波前走了多遠</div><div class="val" id="rX"></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📋 數據紀錄：f × λ 會等於什麼？</h2>
+    <div class="rowbtn">
+      <button class="btn primary" id="rec">＋ 記錄目前這一組</button>
+      <button class="btn" id="clr">清除表格</button>
+      <span style="font-size:.85rem;color:var(--muted)">改變 f 多記錄幾組，再換一條繩子試試。</span>
+    </div>
+    <table>
+      <thead><tr><th>頻率 f (Hz)<br><span style="font-weight:400">每秒幾個波</span></th><th>波長 λ (cm)<br><span style="font-weight:400">每個波多長</span></th><th>f × λ (cm/s)<br><span style="font-weight:400">每秒走多遠</span></th><th>介質波速 v (cm/s)</th></tr></thead>
+      <tbody id="tb"></tbody>
+    </table>
+    <p class="foot">模型：t = 0 時波源開始振動，在均勻介質中送出理想的正弦波。調整 f 或 v 時畫面停在同一時刻，方便比較。</p>
+  </div>
+</div>
+
+<script>
+/* 被嵌入單元頁時：隱藏標題並回報高度給外層頁面 */
+(function(){
+  if (window.parent === window) return;
+  document.documentElement.classList.add("embedded");
+  const send = () => window.parent.postMessage({type:"sim-height", h: document.documentElement.scrollHeight}, "*");
+  window.addEventListener("load", send);
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+(function(){
+  const X_MAX = 50, Y_MAX = 3.4, A = 2, TAU = Math.PI*2, EPS = 1e-9;
+  const C = {wave:'#0f7c8c', p:'#d6336c', mark:'#e8890c', grid:'#e6ebf0', axis:'#9aa6b2', text:'#6b7785', dot:'#0b5561'};
+  const BAND = ['rgba(15,124,140,.13)','rgba(232,137,12,.15)'], CAR = [['#cfe9ec','#0f7c8c'],['#fde3b8','#e8890c']];
+  const S = {v:30, f:3, t:0, playing:false, speed:0.1, train:true, bands:true, rows:[]};
+  const $ = id => document.getElementById(id);
+  const cv = $('cv'), ctx = cv.getContext('2d');
+  let G = {};
+  const lam = () => S.v/S.f;
+  const Y = (x,t) => x <= S.v*t ? A*Math.sin(TAU*S.f*(t - x/S.v)) : 0;
+  const fmt = (n,d=2) => (Math.abs(n) < 0.5*Math.pow(10,-d) ? 0 : n).toFixed(d);
+  const trim = n => String(parseFloat(n.toFixed(2)));
+
+  function resize(){
+    const dpr = window.devicePixelRatio || 1;
+    const w = cv.parentElement.clientWidth - 28, small = w < 600;
+    const plotH = small ? 230 : 280, trainH = S.train ? 84 : 0, H = plotH + trainH;
+    cv.style.height = H + 'px'; cv.width = Math.round(w*dpr); cv.height = Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    const ml = small ? 34 : 46, mr = small ? 12 : 22, mt = 14, mb = 30;
+    G = {w, H, ml, mr, mt, iw:w-ml-mr, ih:plotH-mt-mb, plotH, small};
+    G.mid = mt + G.ih/2; G.sy = (G.ih/2)/Y_MAX;
+    draw();
+  }
+  const px = x => G.ml + x/X_MAX*G.iw, py = y => G.mid - y*G.sy;
+  function label(text, x, y, color, align, size){
+    ctx.font = '700 ' + (size||12) + 'px system-ui, sans-serif'; ctx.textAlign = align||'center'; ctx.textBaseline='middle';
+    ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255,255,255,.92)'; ctx.strokeText(text,x,y);
+    ctx.fillStyle = color; ctx.fillText(text,x,y);
+  }
+
+  function draw(){
+    if(!G.w) return;
+    const L = lam(), t = S.t, xf = S.v*t, n = S.f*t, N = Math.floor(n + 1e-6);
+    ctx.clearRect(0,0,G.w,G.H);
+    ctx.fillStyle = '#fbfcfd'; ctx.fillRect(G.ml,G.mt,G.iw,G.ih);
+    ctx.strokeStyle = C.grid; ctx.lineWidth = 1; ctx.fillStyle = C.text; ctx.font='11px system-ui, sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    for(let x=0;x<=X_MAX;x+=5){ ctx.beginPath(); ctx.moveTo(px(x),G.mt); ctx.lineTo(px(x),G.mt+G.ih); ctx.stroke(); ctx.fillText(x,px(x),G.mt+G.ih+4); }
+    ctx.textAlign='right'; ctx.fillText('x (cm)', G.ml+G.iw, G.mt+G.ih+17);
+    ctx.textBaseline='middle';
+    for(let y=-3;y<=3;y++){ ctx.fillText(y, G.ml-10, py(y)); }
+
+    // each complete wave: colored band + number
+    const ry = py(A) - 20;
+    if(S.bands){
+      for(let i=1;i<=N;i++){
+        const x1 = px(xf - i*L), x2 = px(xf - (i-1)*L);
+        ctx.fillStyle = BAND[i%2]; ctx.fillRect(x1, py(A)-6, x2-x1, 2*A*G.sy+12);
+        if(x2-x1 > 15) label(String(i), (x1+x2)/2, py(-A)-12 < G.mt+G.ih ? G.mt+G.ih-12 : py(-A), i%2 ? '#0a5560' : '#8a5200', 'center', x2-x1 > 26 ? 14 : 11);
+      }
+    }
+    ctx.strokeStyle = C.axis; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(G.ml,G.mid); ctx.lineTo(G.ml+G.iw,G.mid); ctx.stroke();
+
+    // distance bar: one segment per wave
+    if(xf > EPS){
+      ctx.strokeStyle = C.mark; ctx.lineWidth = 5; ctx.lineCap='butt';
+      ctx.beginPath(); ctx.moveTo(px(0),ry); ctx.lineTo(px(xf),ry); ctx.stroke();
+      ctx.strokeStyle = '#7a4700'; ctx.lineWidth = 1.5;
+      for(let i=0;i<=N;i++){ const X = px(xf - i*L); ctx.beginPath(); ctx.moveTo(X,ry-7); ctx.lineTo(X,ry+7); ctx.stroke(); }
+      if(N >= 1 && L/X_MAX*G.iw > 34) for(let i=1;i<=N;i++) label('λ', (px(xf-i*L)+px(xf-(i-1)*L))/2, ry-13, '#7a4700');
+    }
+
+    // wave + particles
+    ctx.strokeStyle = C.wave; ctx.lineWidth = 2.6; ctx.beginPath();
+    for(let i=0;i<=G.iw;i++){ const x=i/G.iw*X_MAX, yy=py(Y(x,t)); i?ctx.lineTo(G.ml+i,yy):ctx.moveTo(G.ml+i,yy); }
+    ctx.stroke();
+    if(L/X_MAX*G.iw > 24){ ctx.fillStyle = C.dot; for(let x=1;x<=X_MAX;x+=1){ ctx.beginPath(); ctx.arc(px(x),py(Y(x,t)),2,0,TAU); ctx.fill(); } }
+
+    // wave front
+    if(xf > EPS){
+      const X = px(xf);
+      ctx.strokeStyle = C.mark; ctx.lineWidth = 1.5; ctx.setLineDash([4,4]);
+      ctx.beginPath(); ctx.moveTo(X,ry); ctx.lineTo(X,S.train ? G.plotH+14 : G.mt+G.ih); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = C.mark; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(X,ry,7,0,TAU); ctx.fill(); ctx.stroke();
+      label('波前', X + (X > G.ml+G.iw-50 ? -12 : 12), ry, '#8a5200', X > G.ml+G.iw-50 ? 'right' : 'left');
+    }
+
+    // source
+    ctx.strokeStyle = 'rgba(214,51,108,.18)'; ctx.lineWidth = 9; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(px(0),py(A)); ctx.lineTo(px(0),py(-A)); ctx.stroke(); ctx.lineCap='butt';
+    ctx.fillStyle = C.p; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(px(0),py(Y(0,t)),7.5,0,TAU); ctx.fill(); ctx.stroke();
+    label('波源', px(0)+10, py(-A)-2 + 16 > G.mt+G.ih ? G.mt+G.ih-8 : py(-A)+14, C.p, 'left');
+
+    // train: one car per wave, leaving the crossing at x = 0
+    if(S.train){
+      const top = G.plotH + 16, h = 32, base = top + h;
+      ctx.strokeStyle = '#8b97a3'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(G.ml,base+7); ctx.lineTo(G.ml+G.iw,base+7); ctx.stroke();
+      ctx.save(); ctx.beginPath(); ctx.rect(px(0),G.plotH,G.iw+G.mr,84); ctx.clip();
+      for(let i=1;i<=N+1;i++){
+        const x1 = px(xf - i*L), x2 = px(xf - (i-1)*L), w = x2-x1-3;
+        if(x2 <= px(0) || w < 2) continue;
+        ctx.fillStyle = CAR[i%2][0]; ctx.strokeStyle = CAR[i%2][1]; ctx.lineWidth = 1.6;
+        ctx.beginPath(); if(ctx.roundRect) ctx.roundRect(x1+1.5,top,w,h,Math.min(6,w/3)); else ctx.rect(x1+1.5,top,w,h); ctx.fill(); ctx.stroke();
+        if(w > 14){ ctx.fillStyle = '#5b6875'; [0.22,0.78].forEach(r => { ctx.beginPath(); ctx.arc(x1+1.5+w*r, base+3, Math.min(4,w/6), 0, TAU); ctx.fill(); }); }
+        if(i <= N && w > 13){ ctx.fillStyle = i%2 ? '#0a5560' : '#8a5200'; ctx.font='700 ' + (w > 60 ? 12 : 11) + 'px system-ui, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.fillText(w > 74 ? '第 ' + i + ' 節' : String(i), x1+1.5+w/2, top+h/2); }
+      }
+      ctx.restore();
+      ctx.strokeStyle = C.p; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(px(0),G.plotH+6); ctx.lineTo(px(0),base+10); ctx.stroke();
+      label('平交道：每秒通過 ' + S.f + ' 節，每節長 ' + trim(L) + ' cm', px(0)+6, base+22, C.p, 'left');
+      if(!G.small) label('列車前進 →', G.ml+G.iw-2, base+22, '#4b5a69', 'right');
+    }
+    panel();
+  }
+
+  function panel(){
+    const L = lam(), t = S.t, xf = S.v*t, n = S.f*t, done = t >= 1 - EPS;
+    $('fTxt').textContent = S.f; $('tTxt').textContent = 't = ' + fmt(t,2) + ' s';
+    const cells = $('secbar').children;
+    for(let i=0;i<cells.length;i++){
+      const r = Math.max(0, Math.min(1, n - i));
+      cells[i].firstChild.style.width = (r*100) + '%'; cells[i].classList.toggle('full', r > 0.55);
+    }
+    $('rT').textContent = fmt(t,2) + ' s'; $('rN').textContent = trim(n) + ' 次（' + trim(n) + ' 個波）';
+    $('rL').textContent = fmt(L,2) + ' cm'; $('rX').textContent = fmt(xf,2) + ' cm';
+    const eq = $('eq'); eq.classList.toggle('done', done);
+    if(t < EPS) eq.innerHTML = '按「▶ 播放 1 秒」：看波源在 1 秒內送出幾個波、波前走到哪裡。';
+    else if(!done) eq.innerHTML = '到目前為止：送出 <b>' + trim(n) + '</b> 個波 × 每個長 <b>' + trim(L) + '</b> cm ＝ 波前走了 <b>' + trim(xf) + '</b> cm';
+    else eq.innerHTML = '<b>1 秒內</b>：送出 <b>' + S.f + '</b> 個波 × 每個長 <b>' + trim(L) + '</b> cm ＝ 波前走了 <b>' + trim(xf) + '</b> cm<br>' +
+      '<span class="big">每秒走的距離就是波速：<b>v ＝ f × λ ＝ ' + S.f + ' × ' + trim(L) + ' ＝ ' + trim(S.f*L) + ' cm/s</b></span>';
+    $('play').textContent = S.playing ? '❚❚ 暫停' : (done ? '↻ 重播 1 秒' : '▶ 播放 1 秒');
+  }
+
+  function buildBar(){
+    const bar = $('secbar'); bar.innerHTML = '';
+    for(let i=1;i<=S.f;i++){ const c = document.createElement('div'); c.className = 'cell'; c.innerHTML = '<i></i><span>' + (S.f <= 5 ? '第 ' + i + ' 次' : i) + '</span>'; bar.appendChild(c); }
+  }
+  function syncUI(){
+    $('f').value = S.f; $('v').value = S.v;
+    $('vf').textContent = S.f + ' Hz'; $('vv').textContent = S.v + ' cm/s';
+    $('speedVal').textContent = S.speed + '×';
+    buildBar();
+  }
+  ['f','v'].forEach(id => $(id).addEventListener('input', e => { S[id] = parseFloat(e.target.value); S.playing = false; syncUI(); draw(); }));
+  document.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => {
+    const [id,dir] = b.dataset.step.split(':'), el = $(id);
+    S[id] = Math.min(+el.max, Math.max(+el.min, S[id] + (+el.step)*(+dir))); S.playing = false; syncUI(); draw();
+  }));
+  $('speed').addEventListener('input', e => { S.speed = parseFloat(e.target.value); $('speedVal').textContent = S.speed + '×'; });
+  $('train').addEventListener('change', e => { S.train = e.target.checked; resize(); });
+  $('bands').addEventListener('change', e => { S.bands = e.target.checked; draw(); });
+  $('play').addEventListener('click', () => { if(!S.playing && S.t >= 1 - EPS) S.t = 0; S.playing = !S.playing; last = performance.now(); draw(); });
+  $('plus').addEventListener('click', () => { S.playing = false; S.t = Math.min(1, (Math.floor(S.f*S.t + 1e-6) + 1)/S.f); draw(); });
+  $('minus').addEventListener('click', () => { S.playing = false; S.t = Math.max(0, (Math.ceil(S.f*S.t - 1e-6) - 1)/S.f); draw(); });
+  $('reset').addEventListener('click', () => { S.playing = false; S.t = 0; draw(); });
+
+  function table(){
+    $('tb').innerHTML = S.rows.length ? S.rows.map(r => '<tr><td>' + r.f + '</td><td>' + fmt(r.v/r.f,2) + '</td><td><b>' + fmt(r.f*(r.v/r.f),2) + '</b></td><td>' + r.v + '</td></tr>').join('')
+      : '<tr><td colspan="4" style="color:#98a3ae">尚未記錄</td></tr>';
+  }
+  $('rec').addEventListener('click', () => { if(!S.rows.some(r => r.v===S.v && r.f===S.f)) S.rows.push({v:S.v, f:S.f}); table(); });
+  $('clr').addEventListener('click', () => { S.rows = []; table(); });
+
+  let last = performance.now();
+  function loop(now){
+    const dt = Math.min(0.1,(now-last)/1000); last = now;
+    if(S.playing){ S.t += dt*S.speed; if(S.t >= 1){ S.t = 1; S.playing = false; } draw(); }
+    requestAnimationFrame(loop);
+  }
+  window.addEventListener('resize', resize);
+  syncUI(); table(); resize(); requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
