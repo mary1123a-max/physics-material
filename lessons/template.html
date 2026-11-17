@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>小節標題</title>
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<!--
+  ★ 新增一節的步驟：
+    1. 複製這個檔案，改名，例如 p3-1-2-periodic-wave.html
+    2. 把下面 data-lesson 改成這一節的代號（例如 p3-1-2）
+    3. 改掉所有「（請填入…）」的內容；用不到的區塊可以整段刪除
+    4. 到 data/course.js 對應章節加一行，並填上 file
+    5. 到 data/questions.js 加這一節的檢核題（lesson 填同一個代號）
+-->
+<body data-page="lesson" data-root=".." data-lesson="（請填入代號，例如 p3-1-2）">
+<main class="wrap">
+
+  <div class="lesson-head">
+    <div class="breadcrumb" id="breadcrumb"></div>
+    <h1>（請填入小節標題）</h1>
+    <p class="lead">（一句話說明這一節要學什麼）</p>
+  </div>
+
+  <section class="card">
+    <h2>🎯 學習目標</h2>
+    <ol class="goals">
+      <li>（目標一）</li>
+      <li>（目標二）</li>
+    </ol>
+  </section>
+
+  <section class="think">
+    <h2>🤔 先想想</h2>
+    <p style="margin:0">（一個生活情境或預測問題）</p>
+  </section>
+
+  <!-- 有互動模擬才保留這一段；src 改成 sims/ 裡的檔名 -->
+  <section class="card">
+    <h2>🔬 互動實驗</h2>
+    <iframe class="sim-frame" src="../sims/（模擬檔名）.html" title="（模擬名稱）" loading="lazy"></iframe>
+    <div class="sim-actions"><a class="btn" href="../sims/（模擬檔名）.html" target="_blank" rel="noopener">在新分頁開啟模擬 ↗</a></div>
+  </section>
+
+  <!-- 想放 YouTube 影片時，把下面這段的註解拿掉，換成影片的嵌入網址
+  <section class="card">
+    <h2>🎬 影片</h2>
+    <div style="position:relative;padding-top:56.25%"><iframe style="position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:10px" src="https://www.youtube.com/embed/影片ID" allowfullscreen></iframe></div>
+  </section>
+  -->
+
+  <section class="card">
+    <h2>📘 觀念整理</h2>
+    <h3>1. （重點標題）</h3>
+    <p>（說明文字）</p>
+    <div class="key">（要特別強調的重點，會以色塊顯示）</div>
+    <p><span class="formula">（公式，例如 v = f λ）</span></p>
+  </section>
+
+  <section class="card">
+    <h2>🧭 操作與討論</h2>
+    <details class="guide"><summary>1. （引導問題）</summary>
+      <div class="hint">（提示或參考答案，學生點開才看得到）</div></details>
+  </section>
+
+  <section class="card">
+    <h2>✏️ 檢核練習</h2>
+    <div data-quiz="（同上面的代號）"></div>
+  </section>
+
+  <section class="assign" id="assignment"></section>
+  <section class="card understood" id="understood"></section>
+  <nav class="pager" id="pager"></nav>
+</main>
+<script src="../data/course.js"></script>
+<script src="../data/questions.js"></script>
+<script src="../assets/js/site.js"></script>
+</body>
+</html>

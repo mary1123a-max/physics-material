@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>行進波與介質質點振動模擬</title>
+<style>
+  :root{
+    --bg:#f5f7fa; --card:#ffffff; --ink:#1d2733; --muted:#6b7785; --line:#e3e8ee;
+    --wave:#0f7c8c; --wave-soft:#d9eef1; --p:#d6336c; --p-soft:#fbe3ec; --q:#6f42c1; --q-soft:#ece4fa;
+    --ghost:#e8890c; --accent:#5b3cc4; --accent-soft:#efeafd;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei","Noto Sans TC","Segoe UI",sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1040px;margin:0 auto;padding:18px 14px 40px}
+  h1{font-size:1.35rem;margin:4px 0 2px}
+  .sub{color:var(--muted);font-size:.92rem;margin:0 0 14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+  .plot-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px;font-size:.88rem;margin:2px 2px 4px}
+  .plot-head b{font-weight:600}
+  .tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.78rem;font-weight:600}
+  .tag.p{background:var(--p-soft);color:var(--p)} .tag.q{background:var(--q-soft);color:var(--q)}
+  .tag.w{background:var(--wave-soft);color:var(--wave)}
+  canvas{display:block;width:100%;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+  #cvTop{cursor:pointer}
+  .hint{font-size:.8rem;color:var(--muted);margin:4px 2px 0}
+
+  .timebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--accent-soft);border:1px solid #ddd3fb;border-radius:14px;padding:10px 12px;margin-bottom:12px}
+  .timebar .lbl{font-weight:600;color:var(--accent);font-size:.9rem;white-space:nowrap}
+  .timebar input[type=range]{flex:1 1 220px}
+  .timebar .tval{font-variant-numeric:tabular-nums;font-weight:700;color:var(--accent);min-width:64px;text-align:right}
+  .speed{display:flex;align-items:center;gap:6px;font-size:.85rem;color:var(--muted);white-space:nowrap}
+  .speed input{width:110px}
+
+  .btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;
+    padding:8px 12px;font-size:.9rem;font-weight:600;cursor:pointer;line-height:1;min-height:38px}
+  .btn:hover{background:#f3f5f8}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{background:#4a2fb0}
+  .btn.icon{width:38px;padding:0;display:inline-flex;align-items:center;justify-content:center}
+
+  .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 18px}
+  .ctl label{display:flex;justify-content:space-between;align-items:baseline;font-size:.86rem;color:var(--muted);margin-bottom:4px}
+  .ctl label span.v{color:var(--ink);font-weight:700;font-size:.98rem;font-variant-numeric:tabular-nums}
+  .ctl .row{display:flex;align-items:center;gap:6px}
+  .ctl .row input[type=range]{flex:1}
+  .ctl .row .btn{min-height:32px;width:32px;padding:0;font-size:1rem}
+  input[type=range]{accent-color:var(--wave);height:28px}
+  .ctl.p input[type=range]{accent-color:var(--p)} .ctl.q input[type=range]{accent-color:var(--q)}
+  .ctl.dis{opacity:.4;pointer-events:none}
+
+  .toggles{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);font-size:.9rem}
+  .toggles label{display:flex;align-items:center;gap:6px;cursor:pointer}
+  .toggles input{width:18px;height:18px;accent-color:var(--wave)}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-left:auto}
+  .seg button{border:0;background:#fff;padding:7px 12px;font-size:.86rem;font-weight:600;cursor:pointer;color:var(--muted)}
+  .seg button.on.p{background:var(--p);color:#fff} .seg button.on.q{background:var(--q);color:#fff}
+  .seg button:disabled{opacity:.4;cursor:not-allowed}
+  .seg .t{padding:7px 10px;font-size:.8rem;color:var(--muted);background:#f6f7f9;border-right:1px solid var(--line)}
+
+  .readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .ro{background:#f3faf9;border:1px solid #d6ecea;border-radius:12px;padding:9px 11px}
+  .ro .k{font-size:.78rem;color:var(--muted)}
+  .ro .val{font-size:1.15rem;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+  .ro.p{background:#fdf2f6;border-color:#f6d3e0} .ro.q{background:#f6f2fd;border-color:#e2d7f7}
+  .phase{margin-top:10px;font-size:.92rem;background:var(--q-soft);border-radius:10px;padding:9px 12px;color:#3d2575;display:none}
+  .phase b{color:var(--q)}
+
+  details{font-size:.92rem}
+  details summary{cursor:pointer;font-weight:600}
+  details ol{margin:8px 0 2px;padding-left:1.3em;line-height:1.7}
+  .foot{font-size:.78rem;color:var(--muted);margin-top:6px}
+  html.embedded .standalone-only{display:none}
+  html.embedded body{background:transparent}
+  html.embedded .wrap{padding:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="standalone-only">行進波與介質質點的振動</h1>
+  <p class="sub standalone-only">波形向右前進，但每個介質質點只在原地上下振動。點一下（或拖曳）上圖任一質點，下圖就會畫出它的 y–t 圖。</p>
+
+  <div class="card">
+    <div class="plot-head">
+      <div><span class="tag w">y–x 圖</span> <b>某一時刻的波形</b>（讀波長 λ）</div>
+      <div id="ghostLegend" style="color:var(--ghost);display:none">- - - T/8 之後的波形（鬼影）</div>
+    </div>
+    <canvas id="cvTop" aria-label="波形 y-x 圖，可點選質點"></canvas>
+    <div id="botWrap">
+    <div class="plot-head" style="margin-top:10px">
+      <div><span class="tag p" id="tTagP">質點 P</span> <span class="tag q" id="tTagQ" style="display:none">質點 Q</span> <b>固定位置、隨時間的振動</b>（讀週期 T）</div>
+    </div>
+    <canvas id="cvBot" aria-label="選定質點的 y-t 圖"></canvas>
+    <p class="hint">上圖讀波長 λ（空間的週期）；下圖讀週期 T（時間的週期）。兩張圖的縱軸刻度相同。</p>
+    </div>
+  </div>
+
+  <div class="timebar">
+    <span class="lbl">⏱ 時間</span>
+    <button class="btn icon" id="stepBack" aria-label="倒退一格（T/12）">◀</button>
+    <button class="btn primary" id="playBtn" style="min-width:84px">❚❚ 暫停</button>
+    <button class="btn icon" id="stepFwd" aria-label="前進一格（T/12）">▶</button>
+    <input type="range" id="tSlider" min="0" max="60" step="0.01" value="0" aria-label="時間軸">
+    <span class="tval" id="tVal">0.00 s</span>
+    <div class="speed">播放速度 <input type="range" id="speed" min="0.25" max="2" step="0.25" value="1"> <b id="speedVal" style="color:var(--ink)">1.0×</b></div>
+  </div>
+
+  <div class="card">
+    <div class="controls">
+      <div class="ctl"><label>振幅 A <span class="v" id="vA"></span></label>
+        <div class="row"><button class="btn" data-step="A:-1">−</button><input type="range" id="A" min="0.5" max="3" step="0.1"><button class="btn" data-step="A:1">＋</button></div></div>
+      <div class="ctl"><label>波速 v（由介質決定） <span class="v" id="vv"></span></label>
+        <div class="row"><button class="btn" data-step="v:-1">−</button><input type="range" id="v" min="2" max="10" step="0.1"><button class="btn" data-step="v:1">＋</button></div></div>
+      <div class="ctl"><label>頻率 f（由波源決定） <span class="v" id="vf"></span></label>
+        <div class="row"><button class="btn" data-step="f:-1">−</button><input type="range" id="f" min="0.1" max="1" step="0.05"><button class="btn" data-step="f:1">＋</button></div></div>
+      <div class="ctl p"><label>質點 P 的位置 x <span class="v" id="vxP"></span></label>
+        <div class="row"><button class="btn" data-step="xP:-1">−</button><input type="range" id="xP" min="0" max="40" step="0.5"><button class="btn" data-step="xP:1">＋</button></div></div>
+      <div class="ctl q dis" id="ctlQ"><label>質點 Q 的位置 x <span class="v" id="vxQ"></span></label>
+        <div class="row"><button class="btn" data-step="xQ:-1">−</button><input type="range" id="xQ" min="0" max="40" step="0.5"><button class="btn" data-step="xQ:1">＋</button></div></div>
+    </div>
+    <div class="toggles">
+      <label><input type="checkbox" id="showYT" checked> 質點振動圖（y–t）</label>
+      <label><input type="checkbox" id="showCurve" checked> 波形曲線</label>
+      <label><input type="checkbox" id="showArrows" checked> 質點速度箭頭</label>
+      <label><input type="checkbox" id="showGhost"> 鬼影（T/8 後）</label>
+      <label><input type="checkbox" id="showQ"> 加入比較質點 Q</label>
+      <div class="seg" role="group" aria-label="點選畫面時設定哪個質點">
+        <span class="t">點選設定</span>
+        <button id="modeP" class="on p">P</button>
+        <button id="modeQ" class="q" disabled>Q</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn" id="zeroT">t 歸零</button>
+      <button class="btn" id="resetAll">↺ 回到預設值</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="readouts">
+      <div class="ro"><div class="k">波速 v</div><div class="val" id="rV"></div></div>
+      <div class="ro"><div class="k">波長 λ = v / f</div><div class="val" id="rL"></div></div>
+      <div class="ro"><div class="k">週期 T = 1 / f</div><div class="val" id="rT"></div></div>
+      <div class="ro"><div class="k">質點最大速率 2πfA</div><div class="val" id="rVmax"></div></div>
+      <div class="ro p"><div class="k">P 此刻位移 y</div><div class="val" id="rYP"></div></div>
+      <div class="ro p"><div class="k">P 此刻速度 v<sub>y</sub></div><div class="val" id="rVyP"></div></div>
+      <div class="ro p"><div class="k">P 此刻運動</div><div class="val" id="rStP" style="font-size:1rem"></div></div>
+    </div>
+    <div class="phase" id="phaseBox"></div>
+  </div>
+
+  <div class="card standalone-only">
+    <details>
+      <summary>課堂引導問題</summary>
+      <ol>
+        <li>波形一直向右跑，P 點有沒有跟著往右移動？（觀察 P 的淡紅色垂直軌道）</li>
+        <li>只改變頻率 f，波速 v 會變嗎？波長 λ 和週期 T 怎麼變？</li>
+        <li>P 位在「波峰前方的下坡」時，此刻向上還是向下？打開鬼影驗證你的判斷。</li>
+        <li>加入 Q，讓 Q 與 P 相距 λ、λ/2、λ/4，比較兩條 y–t 圖有什麼關係？</li>
+        <li>在 y–t 圖中找出 P 的最大速率出現在哪裡，與 2πfA 比較。</li>
+      </ol>
+    </details>
+    <p class="foot">模型：y(x, t) = A sin(ωt − kx)，k = 2π/λ，ω = 2πf，為理想的穩定正弦行進波（橫波）。調整參數時整段圖形依新參數重新計算。</p>
+  </div>
+</div>
+
+<script>
+/* 被嵌入單元頁時：隱藏重複的標題與引導問題，並回報高度給外層頁面 */
+(function(){
+  if (window.parent === window) return;
+  document.documentElement.classList.add("embedded");
+  const send = () => window.parent.postMessage({type:"sim-height", h: document.documentElement.scrollHeight}, "*");
+  window.addEventListener("load", send);
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+(function(){
+  const X_MAX = 40, Y_MAX = 3.5, DX = 0.5;
+  const C = {wave:'#0f7c8c', p:'#d6336c', q:'#6f42c1', ghost:'#e8890c', grid:'#e6ebf0', axis:'#9aa6b2', text:'#6b7785', ink:'#1d2733', dot:'#0b5561', lam:'#18a39a', per:'#5b3cc4'};
+  const DEF = {A:2, v:4, f:0.4, xP:22, xQ:27, speed:1};
+  const S = Object.assign({t:0, playing:true, showYT:true, showCurve:true, showArrows:true, showGhost:false, showQ:false, mode:'P'}, DEF);
+
+  const $ = id => document.getElementById(id);
+  const cvTop = $('cvTop'), cvBot = $('cvBot');
+  const ctxT = cvTop.getContext('2d'), ctxB = cvBot.getContext('2d');
+  let G = {}; // geometry
+
+  const lam = () => S.v / S.f, per = () => 1 / S.f;
+  const kk = () => 2*Math.PI / lam(), ww = () => 2*Math.PI*S.f;
+  const Y  = (x,t) => S.A*Math.sin(ww()*t - kk()*x);
+  const VY = (x,t) => S.A*ww()*Math.cos(ww()*t - kk()*x);
+  const fmt = (n,d=2) => (Math.abs(n) < 0.5*Math.pow(10,-d) ? 0 : n).toFixed(d);
+
+  // ---------- layout ----------
+  function resize(){
+    const dpr = window.devicePixelRatio || 1;
+    const w = cvTop.parentElement.clientWidth - 0;
+    const small = w < 600;
+    const H = small ? 230 : 290;
+    [cvTop, cvBot].forEach(cv => {
+      cv.style.height = H + 'px';
+      cv.width = Math.round(w*dpr); cv.height = Math.round(H*dpr);
+      cv.getContext('2d').setTransform(dpr,0,0,dpr,0,0);
+    });
+    const ml = small ? 36 : 46, mr = small ? 14 : 24, mt = 36, mb = 32;
+    G = {w, H, ml, mr, mt, mb, iw: w-ml-mr, ih: H-mt-mb, small};
+    G.mid = mt + G.ih/2; G.sy = (G.ih/2)/Y_MAX;
+    draw();
+  }
+  const px = x => G.ml + x/X_MAX*G.iw;
+  const py = y => G.mid - y*G.sy;
+
+  // ---------- drawing helpers ----------
+  function arrow(ctx, x, y0, y1, color, width=2, head=6){
+    const dir = Math.sign(y1-y0); if(!dir) return;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = width;
+    ctx.beginPath(); ctx.moveTo(x,y0); ctx.lineTo(x,y1 - dir*head*0.6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x,y1); ctx.lineTo(x-head*0.65,y1-dir*head); ctx.lineTo(x+head*0.65,y1-dir*head); ctx.closePath(); ctx.fill();
+  }
+  function hBracket(ctx, x1, x2, y, color, label){
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(x1,y-5); ctx.lineTo(x1,y+5); ctx.moveTo(x2,y-5); ctx.lineTo(x2,y+5);
+    ctx.moveTo(x1,y); ctx.lineTo(x2,y); ctx.stroke();
+    ctx.font = '600 12px system-ui, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+    const tw = ctx.measureText(label).width + 8, cx = (x1+x2)/2;
+    ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.fillRect(cx-tw/2, y-18, tw, 15);
+    ctx.fillStyle = color; ctx.fillText(label, cx, y-4);
+  }
+  function axesCommon(ctx){
+    ctx.clearRect(0,0,G.w,G.H);
+    ctx.fillStyle = '#fbfcfd'; ctx.fillRect(G.ml, G.mt, G.iw, G.ih);
+    ctx.strokeStyle = C.grid; ctx.lineWidth = 1;
+    ctx.beginPath();
+    for(let yy=-3; yy<=3; yy++){ if(!yy) continue; ctx.moveTo(G.ml, py(yy)); ctx.lineTo(G.ml+G.iw, py(yy)); }
+    ctx.stroke();
+    ctx.strokeStyle = C.axis; ctx.beginPath(); ctx.moveTo(G.ml, G.mid); ctx.lineTo(G.ml+G.iw, G.mid); ctx.stroke();
+    ctx.fillStyle = C.text; ctx.font = '11px system-ui, sans-serif'; ctx.textAlign='right'; ctx.textBaseline='middle';
+    for(let yy=-3; yy<=3; yy+=1){ ctx.fillText(yy, G.ml-6, py(yy)); }
+    ctx.save(); ctx.translate(11, G.mid); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText('y (cm)',0,0); ctx.restore();
+    // amplitude marker
+    ctx.strokeStyle = C.wave; ctx.lineWidth = 1; ctx.setLineDash([2,3]);
+    ctx.beginPath(); ctx.moveTo(G.ml, py(S.A)); ctx.lineTo(G.ml+G.iw, py(S.A)); ctx.moveTo(G.ml, py(-S.A)); ctx.lineTo(G.ml+G.iw, py(-S.A)); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // ---------- top: y–x ----------
+  function drawTop(){
+    const ctx = ctxT, t = S.t;
+    axesCommon(ctx);
+    // x ticks
+    ctx.fillStyle = C.text; ctx.font='11px system-ui, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.strokeStyle = C.grid;
+    for(let x=0; x<=X_MAX; x+=5){
+      ctx.beginPath(); ctx.moveTo(px(x), G.mt); ctx.lineTo(px(x), G.mt+G.ih); ctx.stroke();
+      ctx.fillText(x, px(x), G.mt+G.ih+5);
+    }
+    ctx.textAlign='right'; ctx.fillText('x (cm)', G.ml+G.iw, G.mt+G.ih+18);
+
+    // direction label
+    ctx.fillStyle = C.wave; ctx.font='600 12px system-ui, sans-serif'; ctx.textAlign='right'; ctx.textBaseline='middle';
+    const dx = G.ml+G.iw-4; ctx.fillText('波形前進', dx-38, 16);
+    ctx.strokeStyle = C.wave; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(dx-34,16); ctx.lineTo(dx,16); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(dx,16); ctx.lineTo(dx-7,12); ctx.lineTo(dx-7,20); ctx.closePath(); ctx.fillStyle=C.wave; ctx.fill();
+
+    // ghost
+    if(S.showGhost){
+      const tg = t + per()/8;
+      ctx.strokeStyle = C.ghost; ctx.lineWidth = 2; ctx.setLineDash([6,5]);
+      ctx.beginPath();
+      for(let i=0;i<=G.iw;i++){ const x=i/G.iw*X_MAX; const Yp=py(Y(x,tg)); i?ctx.lineTo(G.ml+i,Yp):ctx.moveTo(G.ml+i,Yp); }
+      ctx.stroke(); ctx.setLineDash([]);
+    }
+
+    // track lines for selected particles
+    const tracks = [[S.xP, C.p, 'rgba(214,51,108,.16)']];
+    if(S.showQ) tracks.push([S.xQ, C.q, 'rgba(111,66,193,.16)']);
+    tracks.forEach(([x,col,soft])=>{
+      ctx.strokeStyle = col; ctx.globalAlpha=.35; ctx.lineWidth=1; ctx.setLineDash([3,4]);
+      ctx.beginPath(); ctx.moveTo(px(x), G.mt); ctx.lineTo(px(x), G.mt+G.ih); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1;
+      ctx.strokeStyle = soft; ctx.lineWidth = 9; ctx.lineCap='round';
+      ctx.beginPath(); ctx.moveTo(px(x), py(S.A)); ctx.lineTo(px(x), py(-S.A)); ctx.stroke(); ctx.lineCap='butt';
+    });
+
+    // wave curve
+    if(S.showCurve){
+      ctx.strokeStyle = C.wave; ctx.lineWidth = 2.6;
+      ctx.beginPath();
+      for(let i=0;i<=G.iw;i++){ const x=i/G.iw*X_MAX; const Yp=py(Y(x,t)); i?ctx.lineTo(G.ml+i,Yp):ctx.moveTo(G.ml+i,Yp); }
+      ctx.stroke();
+    }
+
+    // particles
+    const vmax = S.A*ww();
+    const N = Math.round(X_MAX/DX);
+    for(let i=0;i<=N;i++){
+      const x = i*DX, X = px(x), Yp = py(Y(x,t));
+      if(S.showArrows && i%2===0){
+        const L = VY(x,t)/vmax*20;
+        if(Math.abs(L) > 4) arrow(ctx, X, Yp, Yp - L, 'rgba(232,137,12,.85)', 1.4, 5);
+      }
+      ctx.fillStyle = C.dot; ctx.beginPath(); ctx.arc(X, Yp, G.small?2:2.6, 0, Math.PI*2); ctx.fill();
+    }
+
+    // wavelength bracket (crest to crest)
+    const L = lam();
+    if(L <= X_MAX){
+      let xc = ((ww()*t - Math.PI/2)/kk()) % L; if(xc < 0) xc += L;
+      let x1 = xc, x2 = xc + L;
+      if(x2 > X_MAX){ x1 = 0; x2 = L; }
+      const yb = Math.min(py(S.A) - 12, G.mt + 18);
+      hBracket(ctx, px(x1), px(x2), Math.max(yb, 22), C.lam, 'λ = ' + fmt(L,2) + ' cm');
+    } else {
+      ctx.fillStyle = C.lam; ctx.font='600 12px system-ui, sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
+      ctx.fillText('λ = ' + fmt(L,1) + ' cm（超出畫面）', G.ml+4, 16);
+    }
+
+    // selected particles
+    const sel = [['P', S.xP, C.p]];
+    if(S.showQ) sel.push(['Q', S.xQ, C.q]);
+    sel.forEach(([name,x,col])=>{
+      const X = px(x), Yp = py(Y(x,t)), vy = VY(x,t);
+      const L2 = vy/vmax*30;
+      if(Math.abs(L2) > 3) arrow(ctx, X, Yp, Yp - L2, col, 2.5, 8);
+      ctx.fillStyle = col; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(X, Yp, 7.5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.font = '700 13px system-ui, sans-serif'; ctx.textBaseline='middle';
+      const right = X < G.ml + G.iw - 90;
+      ctx.textAlign = right ? 'left' : 'right';
+      const lx = X + (right ? 12 : -12);
+      const ly = Math.min(Math.max(Yp + (vy>0 ? 14 : -14), G.mt+8), G.mt+G.ih-8);
+      const st = status(vy, Y(x,t));
+      ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255,255,255,.9)';
+      ctx.strokeText(name + '  ' + st.short, lx, ly);
+      ctx.fillStyle = col; ctx.fillText(name + '  ' + st.short, lx, ly);
+    });
+  }
+
+  function status(vy, y){
+    const r = vy/(S.A*ww());
+    if(Math.abs(r) < 0.06) return {short: y>0 ? '波峰・瞬間靜止' : '波谷・瞬間靜止', long: y>0 ? '在最高點，瞬間靜止' : '在最低點，瞬間靜止'};
+    return vy>0 ? {short:'此刻向上 ↑', long:'向上運動 ↑'} : {short:'此刻向下 ↓', long:'向下運動 ↓'};
+  }
+
+  // ---------- bottom: y–t ----------
+  function drawBot(){
+    const ctx = ctxB, t = S.t, T = per();
+    axesCommon(ctx);
+    const Win = Math.min(Math.max(3*T, 5), 30);
+    const t0 = Math.max(0, t - Win);
+    const tx = tt => G.ml + (tt - t0)/Win*G.iw;
+    const step = Win <= 6 ? 1 : Win <= 15 ? 2 : 5;
+    ctx.fillStyle = C.text; ctx.font='11px system-ui, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.strokeStyle = C.grid; ctx.lineWidth = 1;
+    for(let tt = Math.ceil(t0/step)*step; tt <= t0+Win+1e-9; tt += step){
+      ctx.beginPath(); ctx.moveTo(tx(tt), G.mt); ctx.lineTo(tx(tt), G.mt+G.ih); ctx.stroke();
+      ctx.fillText(tt, tx(tt), G.mt+G.ih+5);
+    }
+    ctx.textAlign='right'; ctx.fillText('t (s)', G.ml+G.iw, G.mt+G.ih+18);
+
+    ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.font='600 12px system-ui, sans-serif';
+    ctx.fillStyle = C.p; ctx.fillText('P：x = ' + fmt(S.xP,1) + ' cm', G.ml+4, 16);
+    if(S.showQ){ ctx.fillStyle = C.q; ctx.fillText('Q：x = ' + fmt(S.xQ,1) + ' cm', G.ml+(G.small?118:140), 16); }
+
+    const curves = [];
+    if(S.showQ) curves.push([S.xQ, C.q, [7,5]]);
+    curves.push([S.xP, C.p, []]);
+    const n = Math.max(2, Math.round((t - t0)/Win*G.iw));
+    curves.forEach(([x,col,dash])=>{
+      ctx.strokeStyle = col; ctx.lineWidth = 2.6; ctx.setLineDash(dash);
+      ctx.beginPath();
+      for(let i=0;i<=n;i++){ const tt = t0 + (t-t0)*i/n; const X=tx(tt), Yp=py(Y(x,tt)); i?ctx.lineTo(X,Yp):ctx.moveTo(X,Yp); }
+      ctx.stroke(); ctx.setLineDash([]);
+    });
+
+    // now line
+    const nx = tx(t);
+    ctx.strokeStyle = 'rgba(29,39,51,.25)'; ctx.setLineDash([3,4]); ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(nx, G.mt); ctx.lineTo(nx, G.mt+G.ih); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = C.text; ctx.font='11px system-ui, sans-serif'; ctx.textAlign = nx > G.ml+G.iw-30 ? 'right':'center';
+    ctx.textBaseline='bottom'; ctx.fillText('現在', nx, G.mt-2);
+
+    // period bracket on P curve
+    const w = ww(), k = kk();
+    const nn = Math.ceil((t0*w - Math.PI/2 + k*S.xP)/(2*Math.PI));
+    const tc1 = (Math.PI/2 - k*S.xP + 2*Math.PI*nn)/w, tc2 = tc1 + T;
+    if(tc2 <= t + 1e-9 && tc1 >= t0 - 1e-9){
+      hBracket(ctx, tx(tc1), tx(tc2), Math.max(py(S.A) - 12, G.mt + 14), C.per, 'T = ' + fmt(T,2) + ' s');
+    }
+
+    // now dots
+    curves.forEach(([x,col])=>{
+      ctx.fillStyle = col; ctx.strokeStyle='#fff'; ctx.lineWidth=2.5;
+      ctx.beginPath(); ctx.arc(nx, py(Y(x,t)), 6.5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    });
+  }
+
+  // ---------- readouts ----------
+  function readouts(){
+    const t = S.t, yP = Y(S.xP,t), vP = VY(S.xP,t);
+    $('rV').textContent = fmt(S.v,2) + ' cm/s';
+    $('rL').textContent = fmt(lam(),2) + ' cm';
+    $('rT').textContent = fmt(per(),2) + ' s';
+    $('rVmax').textContent = fmt(2*Math.PI*S.f*S.A,2) + ' cm/s';
+    $('rYP').textContent = fmt(yP,2) + ' cm';
+    $('rVyP').textContent = fmt(vP,2) + ' cm/s';
+    $('rStP').textContent = status(vP, yP).long;
+    $('tVal').textContent = t.toFixed(2) + ' s';
+    const box = $('phaseBox');
+    if(S.showQ){
+      const d = S.xQ - S.xP, L = lam(), cyc = Math.abs(d)/L;
+      const frac = cyc - Math.floor(cyc);
+      let rel = '';
+      if(Math.abs(d) < 1e-9) rel = 'Q 與 P 是同一點。';
+      else {
+        const lead = d > 0 ? 'Q 在 P 右側（較下游），Q 的振動比 P <b>落後</b>' : 'Q 在 P 左側（較上游），Q 的振動比 P <b>超前</b>';
+        rel = lead + ' Δt = |Δx| / v = ' + fmt(Math.abs(d)/S.v,2) + ' s，相當於 ' + fmt(cyc,2) + ' 個週期（相位差 ' + fmt(cyc*360,0) + '°）。';
+        if(frac < 0.01 || frac > 0.99) rel += ' → <b>同相</b>：兩條 y–t 圖重合。';
+        else if(Math.abs(frac-0.5) < 0.01) rel += ' → <b>反相</b>：一個在波峰時另一個在波谷。';
+      }
+      box.innerHTML = '|Δx| = ' + fmt(Math.abs(d),1) + ' cm = ' + fmt(cyc,2) + ' λ。' + rel;
+      box.style.display = 'block';
+    } else box.style.display = 'none';
+  }
+
+  function draw(){ if(!G.w) return; drawTop(); if(S.showYT) drawBot(); readouts(); }
+
+  // ---------- controls ----------
+  const units = {A:' cm', v:' cm/s', f:' Hz', xP:' cm', xQ:' cm'};
+  const digits = {A:1, v:1, f:2, xP:1, xQ:1};
+  function syncUI(){
+    ['A','v','f','xP','xQ'].forEach(id=>{ $(id).value = S[id]; $('v'+id).textContent = fmt(S[id], digits[id]) + units[id]; });
+    $('speed').value = S.speed; $('speedVal').textContent = String(S.speed) + '×';
+    $('showYT').checked = S.showYT; $('botWrap').style.display = S.showYT ? 'block' : 'none';
+    $('showCurve').checked = S.showCurve; $('showArrows').checked = S.showArrows; $('showGhost').checked = S.showGhost; $('showQ').checked = S.showQ;
+    $('ghostLegend').style.display = S.showGhost ? 'block' : 'none';
+    $('ctlQ').classList.toggle('dis', !S.showQ);
+    $('tTagQ').style.display = S.showQ ? 'inline-block' : 'none';
+    $('modeQ').disabled = !S.showQ;
+    if(!S.showQ) S.mode = 'P';
+    $('modeP').classList.toggle('on', S.mode==='P'); $('modeQ').classList.toggle('on', S.mode==='Q');
+    $('playBtn').textContent = S.playing ? '❚❚ 暫停' : '▶ 播放';
+    syncTime();
+  }
+  function syncTime(){
+    const sl = $('tSlider');
+    const mx = Math.max(60, Math.ceil(S.t/30)*30);
+    if(+sl.max !== mx) sl.max = mx;
+    if(!scrubbing) sl.value = S.t;
+  }
+
+  ['A','v','f','xP','xQ'].forEach(id=>{
+    $(id).addEventListener('input', e=>{ S[id] = parseFloat(e.target.value); syncUI(); draw(); });
+  });
+  document.querySelectorAll('[data-step]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const [id, dir] = b.dataset.step.split(':'); const el = $(id);
+      const st = parseFloat(el.step), mn = parseFloat(el.min), mxv = parseFloat(el.max);
+      S[id] = Math.min(mxv, Math.max(mn, Math.round((S[id] + st*(+dir))/st)*st));
+      S[id] = parseFloat(S[id].toFixed(4)); syncUI(); draw();
+    });
+  });
+  $('speed').addEventListener('input', e=>{ S.speed = parseFloat(e.target.value); syncUI(); });
+  ['showYT','showCurve','showArrows','showGhost','showQ'].forEach(id=>{
+    $(id).addEventListener('change', e=>{ S[id] = e.target.checked; if(id==='showQ' && S.showQ) S.mode='Q'; syncUI(); draw(); });
+  });
+  $('modeP').addEventListener('click', ()=>{ S.mode='P'; syncUI(); });
+  $('modeQ').addEventListener('click', ()=>{ if(S.showQ){ S.mode='Q'; syncUI(); } });
+  $('playBtn').addEventListener('click', ()=>{ S.playing = !S.playing; last = performance.now(); syncUI(); });
+  $('stepFwd').addEventListener('click', ()=>{ S.playing=false; S.t += per()/12; syncUI(); draw(); });
+  $('stepBack').addEventListener('click', ()=>{ S.playing=false; S.t = Math.max(0, S.t - per()/12); syncUI(); draw(); });
+  $('zeroT').addEventListener('click', ()=>{ S.t = 0; syncUI(); draw(); });
+  $('resetAll').addEventListener('click', ()=>{
+    Object.assign(S, DEF, {t:0, playing:true, showYT:true, showCurve:true, showArrows:true, showGhost:false, showQ:false, mode:'P'});
+    syncUI(); draw();
+  });
+  let scrubbing = false;
+  const ts = $('tSlider');
+  ts.addEventListener('pointerdown', ()=>{ scrubbing = true; });
+  window.addEventListener('pointerup', ()=>{ scrubbing = false; });
+  ts.addEventListener('input', e=>{ S.t = parseFloat(e.target.value); draw(); });
+
+  // pick particle on the y–x graph
+  let dragging = false;
+  function pick(e){
+    const r = cvTop.getBoundingClientRect();
+    let x = (e.clientX - r.left - G.ml)/G.iw*X_MAX;
+    x = Math.min(X_MAX, Math.max(0, Math.round(x/DX)*DX));
+    if(S.mode==='Q' && S.showQ) S.xQ = x; else S.xP = x;
+    syncUI(); draw();
+  }
+  cvTop.addEventListener('pointerdown', e=>{ dragging = true; try{cvTop.setPointerCapture(e.pointerId);}catch(_){} pick(e); });
+  cvTop.addEventListener('pointermove', e=>{ if(dragging) pick(e); });
+  ['pointerup','pointercancel'].forEach(ev=>cvTop.addEventListener(ev, ()=>{ dragging = false; }));
+
+  document.addEventListener('keydown', e=>{
+    if(e.code==='Space' && !/INPUT|BUTTON/.test(document.activeElement.tagName)){ e.preventDefault(); $('playBtn').click(); }
+  });
+
+  // ---------- loop ----------
+  let last = performance.now();
+  function loop(now){
+    const dt = Math.min(0.1, (now - last)/1000); last = now;
+    if(S.playing && !scrubbing){ S.t += dt*S.speed; syncTime(); draw(); }
+    requestAnimationFrame(loop);
+  }
+  window.addEventListener('resize', resize);
+  syncUI(); resize(); requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

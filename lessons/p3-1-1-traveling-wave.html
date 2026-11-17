@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>行進波與介質質點的振動</title>
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<!-- data-lesson 要和 course.js 裡這一節的 id 相同 -->
+<body data-page="lesson" data-root=".." data-lesson="p3-1-1">
+<main class="wrap">
+
+  <div class="lesson-head">
+    <div class="breadcrumb" id="breadcrumb"></div>
+    <h1>行進波與介質質點的振動</h1>
+    <p class="lead">波形一直往前跑，介質卻留在原地。這一節要分清楚「波形的移動」和「質點的振動」。</p>
+  </div>
+
+  <!-- ① 學習目標 -->
+  <section class="card">
+    <h2>🎯 學習目標</h2>
+    <ol class="goals">
+      <li>說明波傳遞的是波形與能量，介質質點只在平衡位置附近振動。</li>
+      <li>由 y–x 圖讀出振幅 A、波長 λ；由 y–t 圖讀出週期 T。</li>
+      <li>已知波的前進方向，判斷某一質點此刻向上或向下運動。</li>
+      <li>運用 v = fλ，並說明波速由介質決定、頻率由波源決定。</li>
+    </ol>
+  </section>
+
+  <!-- ② 先想想 -->
+  <section class="think">
+    <h2>🤔 先想想</h2>
+    <p style="margin:0">球場上觀眾玩「波浪舞」，波浪繞了整個看台一圈。每位觀眾有沒有跟著波浪繞場一圈？他們實際上做了什麼動作？</p>
+  </section>
+
+  <!-- ③ 互動實驗 -->
+  <section class="card">
+    <h2>🔬 互動實驗：選一個質點來觀察</h2>
+    <p class="small muted" style="margin-top:0">點一下（或拖曳）上方波形中的任一質點，下方就會畫出它的振動圖。</p>
+    <iframe class="sim-frame" src="../sims/traveling-wave.html" title="行進波與介質質點振動模擬" loading="lazy"></iframe>
+    <div class="sim-actions"><a class="btn" href="../sims/traveling-wave.html" target="_blank" rel="noopener">在新分頁開啟模擬 ↗</a></div>
+  </section>
+
+  <!-- ④ 觀念整理 -->
+  <section class="card">
+    <h2>📘 觀念整理</h2>
+
+    <h3>1. 波傳的是「波形」，不是介質</h3>
+    <div class="key">行進波前進時，每個介質質點只在自己的平衡位置附近振動。橫波的質點振動方向<b>垂直</b>於傳播方向。</div>
+
+    <h3>2. 兩種圖，讀不同的量</h3>
+    <table class="compare">
+      <tr><th></th><th>y–x 圖（波形圖）</th><th>y–t 圖（振動圖）</th></tr>
+      <tr><td>描述什麼</td><td>某一<b>瞬間</b>、所有位置的位移</td><td>某一<b>位置</b>、不同時間的位移</td></tr>
+      <tr><td>橫軸</td><td>位置 x</td><td>時間 t</td></tr>
+      <tr><td>相鄰兩峰的間隔</td><td>波長 λ</td><td>週期 T</td></tr>
+      <tr><td>像是</td><td>幫整條繩子拍一張照片</td><td>盯著一個質點錄影</td></tr>
+    </table>
+
+    <h3>3. 波速、頻率與波長</h3>
+    <p>波形每經過一個週期 T 前進一個波長 λ：</p>
+    <p><span class="formula">v = λ / T = f λ</span></p>
+    <div class="key">波速 v 由<b>介質</b>決定；頻率 f 由<b>波源</b>決定。同一介質中改變 f，v 不變，λ 跟著改變。</div>
+
+    <h3>4. 判斷質點此刻的運動方向</h3>
+    <p><b>鬼影法：</b>把波形沿前進方向稍微推一點點，看該質點的新位置比現在高還是低。</p>
+    <p><b>口訣：</b>沿著傳播方向看，「上坡往下、下坡往上」。波峰、波谷的質點此刻瞬間靜止。</p>
+
+    <h3>5. 質點速率 ≠ 波速</h3>
+    <p>質點做簡諧運動，最大速率 <span class="formula">v<sub>max</sub> = Aω = 2πfA</span>，出現在通過平衡位置的瞬間；這和波形前進的快慢 v 是兩回事。</p>
+  </section>
+
+  <!-- ⑤ 課堂引導問題 -->
+  <section class="card">
+    <h2>🧭 操作與討論</h2>
+    <p class="small muted" style="margin-top:0">先自己操作模擬、想出答案，再點開提示對照。</p>
+    <details class="guide"><summary>1. 波形一直向右跑，P 點有沒有跟著往右移動？</summary>
+      <div class="hint">沒有。P 只沿著淡紅色的垂直軌道上下振動，往右跑的是「波形」與能量。可以關掉「波形曲線」只看質點，會更明顯。</div></details>
+    <details class="guide"><summary>2. 只改變頻率 f，波速 v 會變嗎？波長 λ 和週期 T 怎麼變？</summary>
+      <div class="hint">v 不變（由介質決定）。f 變大時，λ = v/f 變小、T = 1/f 變小：上圖波峰變密，下圖振動變快。</div></details>
+    <details class="guide"><summary>3. P 位在「波峰前方的下坡」時，此刻向上還是向下？</summary>
+      <div class="hint">向上。打開「鬼影」：稍後的波形在 P 處比現在高，代表 P 正在上升。</div></details>
+    <details class="guide"><summary>4. 加入 Q，讓 Q 與 P 相距 λ、λ/2、λ/4，兩條 y–t 圖有什麼關係？</summary>
+      <div class="hint">相距 λ：兩線重合（同相）。相距 λ/2：上下顛倒（反相）。相距 λ/4：下游的質點落後四分之一個週期。</div></details>
+    <details class="guide"><summary>5. 質點速率最大出現在 y–t 圖的哪裡？</summary>
+      <div class="hint">在 y–t 圖最陡的地方，也就是質點通過 y = 0 的瞬間；在波峰、波谷時速率為零。最大值就是讀數卡上的 2πfA。</div></details>
+  </section>
+
+  <!-- ⑥ 檢核練習：題目寫在 data/questions.js，lesson 欄位填 p3-1-1 的題目會自動出現 -->
+  <section class="card">
+    <h2>✏️ 檢核練習</h2>
+    <div data-quiz="p3-1-1"></div>
+  </section>
+
+  <!-- ⑦ 作業繳交：course.js 裡這一節的 form 有填網址才會出現 -->
+  <section class="assign" id="assignment"></section>
+
+  <!-- ⑧ 我理解了 -->
+  <section class="card understood" id="understood"></section>
+
+  <nav class="pager" id="pager"></nav>
+</main>
+<script src="../data/course.js"></script>
+<script src="../data/questions.js"></script>
+<script src="../assets/js/site.js"></script>
+</body>
+</html>

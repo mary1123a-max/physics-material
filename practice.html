@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>題庫練習｜物理互動學習站</title>
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body data-page="practice" data-root=".">
+<main class="wrap">
+  <h1>題庫練習</h1>
+  <p class="lead">依課程、章節與難度挑題目練習。每頁 5 題，答錯的題目會收進錯題本。</p>
+  <div class="card">
+    <div class="filters">
+      <select id="fCourse" aria-label="課程"><option value="">全部課程</option></select>
+      <select id="fChapter" aria-label="章節"><option value="">全部章節</option></select>
+      <select id="fLevel" aria-label="難度">
+        <option value="">全部難度</option><option value="1">基礎</option><option value="2">進階</option><option value="3">挑戰</option>
+      </select>
+      <select id="fState" aria-label="作答狀態">
+        <option value="">全部題目</option><option value="new">只看未作答</option><option value="wrong">只看錯題</option>
+      </select>
+      <span class="muted small" id="qCount" style="margin-left:auto"></span>
+    </div>
+  </div>
+  <div id="qList"></div>
+  <div class="pagination" id="qPages"></div>
+</main>
+<script src="data/course.js"></script>
+<script src="data/questions.js"></script>
+<script src="assets/js/site.js"></script>
+</body>
+</html>
