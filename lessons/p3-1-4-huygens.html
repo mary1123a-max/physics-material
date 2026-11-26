@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>惠更斯原理與繞射</title>
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body data-page="lesson" data-root=".." data-lesson="p3-1-4">
+<main class="wrap">
+
+  <div class="lesson-head">
+    <div class="breadcrumb" id="breadcrumb"></div>
+    <h1>惠更斯原理與繞射</h1>
+    <p class="lead">惠更斯原理不只是一種畫圖的方法。它在說的是：波是怎麼「一個推一個」傳下去的。</p>
+  </div>
+
+  <!-- ===== 開場提問（要修改文字，直接改這一段） ===== -->
+  <section class="think">
+    <h2>🤔 先想想：牆上的小洞</h2>
+    <p style="margin:0 0 6px">海浪一排一排地打向防波堤。防波堤中間有一個很窄的缺口。缺口後面（港內）的水面會是什麼樣子？</p>
+    <p style="margin:0">（A）只有缺口正後方有一條窄窄的波浪，直直往前走<br>
+    （B）港內完全沒有波浪<br>
+    （C）缺口後面出現以缺口為中心、向四周擴散的圓形波<br>
+    （D）港內的波浪和港外一模一樣，一排一排直的</p>
+    <p class="small muted" style="margin:6px 0 0">先選一個答案，最好畫一張草圖，再用下面的模擬檢驗。</p>
+  </section>
+
+  <section class="card">
+    <h2>🎯 學習目標</h2>
+    <ol class="goals">
+      <li>說明為什麼小孔後方會出現以小孔為中心的圓形波。</li>
+      <li>用自己的話說明惠更斯原理：波前上的每一點都可以看成新的子波源。</li>
+      <li>用惠更斯作圖法，由現在的波前畫出下一刻的波前。</li>
+      <li>用子波的觀點說明繞射，以及開口大小與波長的關係。</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>🔬 互動實驗：從一顆石頭到惠更斯原理</h2>
+    <p class="small muted" style="margin-top:0">這是水波槽的俯視圖：亮的是波峰，暗的是波谷。請照 1 → 5 的順序操作，每一步下方都有說明。</p>
+    <iframe class="sim-frame" src="../sims/huygens.html" title="惠更斯原理模擬" loading="lazy"></iframe>
+    <div class="sim-actions"><a class="btn" href="../sims/huygens.html" target="_blank" rel="noopener">在新分頁開啟模擬（適合投影） ↗</a></div>
+  </section>
+
+  <section class="card">
+    <h2>🧭 操作與討論</h2>
+    <p class="small muted" style="margin-top:0">每一題對應模擬的一個步驟。先自己回答，再點開對照。</p>
+
+    <h3>步驟 1：丟一顆石頭</h3>
+    <details class="guide"><summary>1. 為什麼石頭造成的波是圓形的，而不是只往某一個方向跑？</summary>
+      <div class="hint">被石頭擾動的水，會拉扯、推動<b>周圍所有方向</b>的水；那些水動起來後，又推動它們周圍的水。水面沒有哪個方向比較特別，所以擾動以相同的速率往四面八方傳開，形成圓形。<br>記住這個畫面：<b>波是一個推一個傳下去的。</b></div></details>
+
+    <h3>步驟 2：牆上一個小洞</h3>
+    <details class="guide"><summary>2. 牆後的波是什麼形狀？圓心在哪裡？這和你在「先想想」的預測一樣嗎？</summary>
+      <div class="hint">牆後是圓形波，圓心就在小洞。答案是（C）。</div></details>
+    <details class="guide"><summary>3. 牆後的水「知道」波原本是從左邊一排一排打過來的嗎？它只感覺得到什麼？</summary>
+      <div class="hint">不知道。牆後的水只接觸得到小洞裡的那一點水，只感覺到「這一點在上下振動」。對它來說，這和有人在小洞那裡不斷丟石頭沒有兩樣。所以<b>小洞變成了一個新的波源</b>，它發出的圓形波叫做<b>子波</b>。</div></details>
+
+    <h3>步驟 3：多開幾個洞</h3>
+    <details class="guide"><summary>4. 開 2～3 個洞時，你看到幾個子波？把洞增加到 20 個以上，前方的波前變成什麼形狀？</summary>
+      <div class="hint">每個洞各發出一個圓形子波。洞又多又密時，所有子波最前面的波峰連成一條直線，前方又出現了直的波前，看起來就像原本的平面波。</div></details>
+
+    <h3>步驟 4：把牆拿掉</h3>
+    <details class="guide"><summary>5. 如果牆上的洞多到整面牆都是洞，其實就等於沒有牆。那麼一道平面波在前進時，波前上的每一點在做什麼？</summary>
+      <div class="hint">每一點都像一個小洞，都在發出子波，這就是<b>惠更斯原理</b>。平面波之所以能一直往前，是因為波前上每一點不斷發出子波，這些子波又合成下一道波前，一排接一排地接力下去。</div></details>
+    <details class="guide"><summary>6. 看黃線和橘色子波。黃線（新波前）和子波有什麼關係？</summary>
+      <div class="hint">黃線剛好和所有子波最前緣相切，稱為子波的<b>包絡</b>。經過時間 Δt，每個子波的半徑是 vΔt，把它們的包絡畫出來，就是新的波前。這就是課本上的<b>惠更斯作圖法</b>。切換成「圓形波」，作法完全一樣。</div></details>
+
+    <h3>步驟 5：開口大小與繞射</h3>
+    <details class="guide"><summary>7. 把開口調到最窄（小於一個波長），波穿過後的形狀像哪一個步驟？為什麼？</summary>
+      <div class="hint">像步驟 2 的小洞。開口很窄時，裡面的子波源都擠在一起，整個開口就像一個子波源，所以波穿過後向四面八方擴散成圓形波。</div></details>
+    <details class="guide"><summary>8. 把開口調寬（6 個波長以上）。中間的波和兩側邊緣的波，各自怎麼走？</summary>
+      <div class="hint">中間：許多子波彼此合成直的波前，大致直直前進。邊緣：最外側的子波，外面那一側沒有相鄰的子波和它合成，所以它的圓形會往牆後的陰影區散開。這種波繞過障礙物邊緣、進入陰影區的現象叫<b>繞射</b>。</div></details>
+    <details class="guide"><summary>9. 固定開口寬度，只改變波長。波長變長時，繞射變明顯還是不明顯？</summary>
+      <div class="hint">變明顯。真正決定繞射程度的是「開口寬度是波長的幾倍」：開口和波長差不多或更小時，繞射最明顯；開口比波長大很多時，波大致直線前進。</div></details>
+  </section>
+
+  <section class="card">
+    <h2>📘 觀念整理</h2>
+
+    <h3>1. 先有感覺：波是「推鄰居」傳下去的</h3>
+    <div class="key">介質中任何一點只要開始振動，就會帶動它周圍<b>各個方向</b>的鄰居跟著振動。所以每一個正在振動的點，都可以看成一個小小的波源。</div>
+
+    <h3>2. 惠更斯原理</h3>
+    <div class="key">波前上的每一點，都可以看成新的點波源，發出與原來的波<b>相同速率、相同頻率</b>的子波。經過一段時間 Δt 後，這些子波的<b>包絡</b>（共同切線或切面）就是新的波前。</div>
+    <table class="compare">
+      <tr><th>作圖步驟</th><th>平面波</th><th>圓形波</th></tr>
+      <tr><td>① 在現在的波前上取許多點</td><td>直線上取點</td><td>圓上取點</td></tr>
+      <tr><td>② 以每點為圓心、vΔt 為半徑畫子波</td><td colspan="2">每個子波的半徑都相同（同一介質、波速相同）</td></tr>
+      <tr><td>③ 畫出子波前緣的包絡</td><td>往前移動 vΔt 的直線</td><td>半徑多了 vΔt 的圓</td></tr>
+    </table>
+    <p class="small muted">補充：每個子波其實是完整的圓，課本的作圖只取往前的包絡。為什麼不會產生往回傳的波，需要更完整的理論（大學物理）才能說明。</p>
+
+    <h3>3. 繞射</h3>
+    <div class="key">波遇到障礙物或通過開口時，會繞過邊緣、進入幾何上的陰影區，這叫<b>繞射</b>。開口（或障礙物）的大小和波長相近或更小時，繞射最明顯。</div>
+    <table class="compare">
+      <tr><th>開口寬度 a</th><th>通過後的波</th><th>用子波來想</th></tr>
+      <tr><td>a ≲ λ</td><td>向四面八方擴散，接近圓形波</td><td>整個開口像一個子波源</td></tr>
+      <tr><td>a ≫ λ</td><td>中間大致直線前進，只有邊緣彎進陰影區</td><td>中間的子波合成直的波前，邊緣的子波一側沒有鄰居</td></tr>
+    </table>
+    <p class="small muted" style="margin-bottom:0">生活中的例子：聲波的波長約在幾公分到十幾公尺之間，和門、牆角的大小差不多，所以站在轉角後面也聽得到聲音；光的波長不到千分之一毫米，遠小於門的寬度，所以看不到轉角後的人。</p>
+  </section>
+
+  <section class="card">
+    <h2>✏️ 檢核練習</h2>
+    <div data-quiz="p3-1-4"></div>
+  </section>
+
+  <section class="assign" id="assignment"></section>
+  <section class="card understood" id="understood"></section>
+  <nav class="pager" id="pager"></nav>
+</main>
+<script src="../data/course.js"></script>
+<script src="../data/questions.js"></script>
+<script src="../assets/js/site.js"></script>
+</body>
+</html>

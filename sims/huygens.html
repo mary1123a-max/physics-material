@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>惠更斯原理：每一點都是新的波源</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#f5f7fa;color:#1d2733;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei","Noto Sans TC","Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1040px;margin:0 auto;padding:16px 12px 36px}
+  h1{font-size:1.35rem;margin:4px 0 2px}
+  .sub{color:#6b7785;font-size:.92rem;margin:0 0 12px}
+  .card{background:#fff;border:1px solid #e3e8ee;border-radius:14px;padding:12px 14px;margin-bottom:12px}
+  .scenes{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .scenes button{appearance:none;border:1px solid #d5dbe2;background:#fff;color:#1d2733;border-radius:10px;padding:8px 12px;font:inherit;font-size:.9rem;font-weight:700;cursor:pointer;display:flex;gap:6px;align-items:center}
+  .scenes button .n{display:inline-flex;width:22px;height:22px;border-radius:50%;background:#e3f2f4;color:#0a5560;align-items:center;justify-content:center;font-size:.8rem}
+  .scenes button.on{background:#0a4d6e;border-color:#0a4d6e;color:#fff}
+  .scenes button.on .n{background:#ffd34d;color:#000}
+  .tank{position:relative;border-radius:12px;overflow:hidden;background:#0c4a6e}
+  canvas{display:block;width:100%}
+  .caption{margin:10px 0 0;padding:10px 14px;border-radius:10px;background:#0f2433;color:#e9f3f8;font-size:1rem;line-height:1.65}
+  .caption b{color:#ffd34d}
+  .note{font-size:.8rem;color:#6b7785;margin:6px 2px 0}
+  .bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+  .btn{appearance:none;border:1px solid #d5dbe2;background:#fff;color:#1d2733;border-radius:10px;padding:8px 14px;font:inherit;font-size:.92rem;font-weight:700;cursor:pointer;min-height:38px}
+  .btn.primary{background:#0a4d6e;border-color:#0a4d6e;color:#fff}
+  .ctl{flex:1 1 200px;min-width:180px}
+  .ctl label{display:flex;justify-content:space-between;font-size:.86rem;color:#6b7785}
+  .ctl label b{color:#1d2733;font-variant-numeric:tabular-nums}
+  .ctl input[type=range]{width:100%;height:26px;accent-color:#0a4d6e}
+  .checks{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.9rem;margin-top:10px;padding-top:10px;border-top:1px dashed #e3e8ee}
+  .checks label{display:flex;align-items:center;gap:6px;cursor:pointer}
+  .checks input{width:18px;height:18px;accent-color:#0a4d6e}
+  .seg{display:inline-flex;border:1px solid #d5dbe2;border-radius:10px;overflow:hidden}
+  .seg button{border:0;border-left:1px solid #d5dbe2;background:#fff;padding:7px 12px;font:inherit;font-size:.88rem;font-weight:700;cursor:pointer;color:#6b7785}
+  .seg button:first-child{border-left:0}
+  .seg button.on{background:#0a4d6e;color:#fff}
+  html.embedded .standalone-only{display:none}
+  html.embedded body{background:transparent}
+  html.embedded .wrap{padding:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="standalone-only">惠更斯原理：每一點都是新的波源</h1>
+  <p class="sub standalone-only">從丟一顆石頭開始，一步一步看懂波為什麼這樣傳。</p>
+
+  <div class="card">
+    <div class="scenes" id="scenes">
+      <button data-s="1"><span class="n">1</span>丟一顆石頭</button>
+      <button data-s="2"><span class="n">2</span>牆上一個小洞</button>
+      <button data-s="3"><span class="n">3</span>多開幾個洞</button>
+      <button data-s="4"><span class="n">4</span>把牆拿掉：惠更斯原理</button>
+      <button data-s="5"><span class="n">5</span>開口大小與繞射</button>
+    </div>
+    <div class="tank"><canvas id="cv" aria-label="水波槽俯視圖"></canvas></div>
+    <div class="caption" id="caption"></div>
+    <p class="note" id="note"></p>
+  </div>
+
+  <div class="card">
+    <div class="bar">
+      <button class="btn primary" id="play">❚❚ 暫停</button>
+      <button class="btn" id="restart">↺ 重新開始</button>
+      <div class="ctl"><label>波長 λ <b id="vL"></b></label><input type="range" id="lam" min="2" max="6" step="0.5"></div>
+      <div class="ctl"><label>播放速度 <b id="vS"></b></label><input type="range" id="speed" min="0.25" max="1.5" step="0.25"></div>
+      <div class="ctl only" data-only="3"><label>洞的數量 <b id="vH"></b></label><input type="range" id="holes" min="1" max="25" step="1"></div>
+      <div class="ctl only" data-only="5"><label>開口寬度 a <b id="vA"></b></label><input type="range" id="open" min="1" max="26" step="0.5"></div>
+      <div class="only" data-only="4"><div class="seg" role="group" aria-label="波前形狀"><button data-shape="plane" class="on">平面波</button><button data-shape="circle">圓形波</button></div></div>
+    </div>
+    <div class="checks">
+      <label class="only" data-only="2 3 5"><input type="checkbox" id="showSrc" checked> 標示子波源（橘點）</label>
+      <label class="only" data-only="2 3"><input type="checkbox" id="showCirc" checked> 畫出每個子波的波峰</label>
+      <label class="only" data-only="4"><input type="checkbox" id="showCons" checked> 惠更斯作圖（子波與包絡）</label>
+      <label class="only" data-only="1"><span style="color:#6b7785">在水面上點一下，換個位置丟石頭</span></label>
+    </div>
+  </div>
+</div>
+
+<script>
+/* 被嵌入單元頁時：隱藏標題並回報高度給外層頁面 */
+(function(){
+  if (window.parent === window) return;
+  document.documentElement.classList.add("embedded");
+  const send = () => window.parent.postMessage({type:"sim-height", h: document.documentElement.scrollHeight}, "*");
+  window.addEventListener("load", send);
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+
+(function(){
+  const WX = 60, WY = 40, V = 4, WALL = 18, CY = 20, TAU = Math.PI*2;
+  const S = {scene:1, lam:3, t:0, playing:true, speed:1, src:{x:14, y:20}, holes:5, open:6, shape:'plane',
+             showSrc:true, showCirc:true, showCons:true};
+  const $ = id => document.getElementById(id);
+  const cv = $('cv'), ctx = cv.getContext('2d');
+  const off = document.createElement('canvas'), octx = off.getContext('2d');
+  let G = {}, img, F = null;     // F：牆後的子波疊加結果（事先算好）
+
+  const k = () => TAU / S.lam, w = () => TAU * V / S.lam;
+
+  /* ---------- 版面 ---------- */
+  function resize(){
+    const dpr = window.devicePixelRatio || 1;
+    const wpx = cv.parentElement.clientWidth, hpx = Math.round(wpx * WY / WX);
+    cv.style.height = hpx + 'px'; cv.width = Math.round(wpx*dpr); cv.height = Math.round(hpx*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    const gw = Math.max(150, Math.min(300, Math.round(wpx / 3))), gh = Math.round(gw * WY / WX);
+    off.width = gw; off.height = gh; img = octx.createImageData(gw, gh);
+    G = {w:wpx, h:hpx, gw, gh, cx: WX/gw, cy: WY/gh};
+    G.X = new Float32Array(gw); for (let i=0;i<gw;i++) G.X[i] = (i+0.5)*G.cx;
+    G.Y = new Float32Array(gh); for (let j=0;j<gh;j++) G.Y[j] = (j+0.5)*G.cy;
+    F = null; draw();
+  }
+  const sx = X => X / WX * G.w, sy = Y => Y / WY * G.h;
+
+  /* ---------- 牆與子波源 ---------- */
+  function layout(){
+    if (S.scene === 2) return {srcs:[{y:CY, wt:1}], opens:[[CY-0.45, CY+0.45]]};
+    if (S.scene === 3){
+      const n = S.holes, d = 1.5, srcs = [], opens = [];
+      for (let i=0;i<n;i++){ const y = CY + (i - (n-1)/2) * d; srcs.push({y, wt:1}); opens.push([y-0.3, y+0.3]); }
+      return {srcs, opens};
+    }
+    if (S.scene === 5){
+      const a = S.open, ds = Math.min(0.4, S.lam/6), n = Math.max(1, Math.ceil(a/ds)), step = a/n, srcs = [];
+      const wt = step * Math.sqrt(k() / TAU);
+      for (let i=0;i<n;i++) srcs.push({y: CY - a/2 + (i+0.5)*step, wt});
+      return {srcs, opens:[[CY - a/2, CY + a/2]]};
+    }
+    return null;
+  }
+
+  /* 牆後每一點：U = Σ 子波（振幅隨 1/√r 變小，相位 k·r） */
+  function precompute(){
+    const L = layout(), {gw, gh} = G, K = k(), obl = S.scene === 5;
+    const Ur = new Float32Array(gw*gh), Ui = new Float32Array(gw*gh), Rm = new Float32Array(gw*gh).fill(1e9);
+    const mags = [];
+    for (let j=0;j<gh;j++){
+      const Y = G.Y[j];
+      for (let i=0;i<gw;i++){
+        const X = G.X[i]; if (X <= WALL) continue;
+        const dx = X - WALL; let re = 0, im = 0, rmin = 1e9;
+        for (const s of L.srcs){
+          const dy = Y - s.y, r = Math.sqrt(dx*dx + dy*dy);
+          // 開口（第 5 步）的子波加上傾斜因子：往正前方最強、往側邊較弱
+          const a = s.wt / Math.sqrt(Math.max(r, 0.3)) * (obl ? (1 + dx / Math.max(r, 1e-6)) / 2 : 1);
+          re += a * Math.cos(K*r); im += a * Math.sin(K*r); if (r < rmin) rmin = r;
+        }
+        const p = j*gw + i; Ur[p] = re; Ui[p] = im; Rm[p] = rmin;
+        if (rmin > 1.5 && (i + j) % 3 === 0) mags.push(Math.hypot(re, im));
+      }
+    }
+    mags.sort((a,b) => a-b);
+    const p90 = mags.length ? mags[Math.floor(mags.length*0.9)] : 1;
+    F = {L, Ur, Ui, Rm, scale: Math.min(8, Math.max(0.4, (S.scene === 5 ? 0.75 : 0.9) / Math.max(p90, 1e-6)))};
+  }
+
+  /* ---------- 水面顏色 ---------- */
+  function paint(p, v){
+    v = Math.tanh(1.3 * v) / 0.862;          // 柔和壓縮：很高的波峰不會過曝
+    v = Math.max(-1, Math.min(1, v));
+    const t = (v + 1) / 2;
+    let r = 10 + 150*t, g = 62 + 160*t, b = 98 + 150*t;
+    if (v > 0.88){ const h = (v - 0.88) / 0.12; r += (255-r)*h; g += (255-g)*h; b += (255-b)*h; }
+    const q = p*4; img.data[q] = r; img.data[q+1] = g; img.data[q+2] = b; img.data[q+3] = 255;
+  }
+
+  function renderField(){
+    const {gw, gh} = G, K = k(), W = w(), t = S.t, sc = S.scene;
+    if ((sc === 2 || sc === 3 || sc === 5) && !F) precompute();
+    const colPlane = new Float32Array(gw);
+    for (let i=0;i<gw;i++) colPlane[i] = G.X[i] < V*t ? Math.cos(K*G.X[i] - W*t) : 0;
+
+    if (sc === 1 || (sc === 4 && S.shape === 'circle')){
+      const c = sc === 1 ? S.src : {x:5, y:CY};
+      for (let j=0;j<gh;j++) for (let i=0;i<gw;i++){
+        const r = Math.hypot(G.X[i]-c.x, G.Y[j]-c.y);
+        paint(j*gw+i, r < V*t ? 1.8 * Math.cos(K*r - W*t) / Math.sqrt(Math.max(r, 0.8)) : 0);
+      }
+    } else if (sc === 4){
+      for (let j=0;j<gh;j++) for (let i=0;i<gw;i++) paint(j*gw+i, colPlane[i]);
+    } else {
+      const th = K*WALL - W*t, c = Math.cos(th), s = Math.sin(th), front = V*t - WALL;
+      for (let j=0;j<gh;j++) for (let i=0;i<gw;i++){
+        const p = j*gw + i;
+        if (G.X[i] <= WALL) paint(p, colPlane[i]);
+        else paint(p, F.Rm[p] < front ? F.scale * (F.Ur[p]*c - F.Ui[p]*s) : 0);
+      }
+    }
+    octx.putImageData(img, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(off, 0, 0, G.w, G.h);
+  }
+
+  /* ---------- 疊加在上面的線條 ---------- */
+  function drawWall(L){
+    const x1 = sx(WALL - 0.35), x2 = sx(WALL + 0.35);
+    ctx.fillStyle = '#c9d2da';
+    let y = 0;
+    const opens = L.opens.slice().sort((a,b) => a[0]-b[0]);
+    for (const [a,b] of opens){ if (a > y) ctx.fillRect(x1, sy(y), x2-x1, sy(a)-sy(y)); y = Math.max(y, b); }
+    if (y < WY) ctx.fillRect(x1, sy(y), x2-x1, sy(WY)-sy(y));
+    ctx.strokeStyle = '#7d8a96'; ctx.lineWidth = 1; ctx.strokeRect(x1, -1, x2-x1, G.h+2);
+  }
+  function drawSources(L){
+    const t = S.t, reached = V*t >= WALL;
+    const pulse = reached ? Math.max(0, Math.cos(k()*WALL - w()*t)) : 0;
+    const dense = L.srcs.length > 30;
+    ctx.fillStyle = '#ff9f1a'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+    for (const s of L.srcs){
+      const r = (dense ? 2 : 4) + (reached ? (dense ? 1.5 : 3) * pulse : 0);
+      ctx.beginPath(); ctx.arc(sx(WALL), sy(s.y), r, 0, TAU); ctx.fill(); if (!dense) ctx.stroke();
+    }
+  }
+  function drawWavelets(L){
+    const base = V*S.t - WALL; if (base <= 0) return;
+    const many = L.srcs.length > 5;           // 洞很多時只畫最前面的波峰，避免太亂
+    for (let m=0; m<(many ? 1 : 3); m++){
+      const r = base - m*S.lam; if (r <= 0) break;
+      ctx.strokeStyle = many ? 'rgba(255,170,60,.6)' : 'rgba(255,170,60,' + (0.85 - m*0.25) + ')'; ctx.lineWidth = many ? 1.2 : (m ? 1.2 : 2);
+      for (const s of L.srcs){ ctx.beginPath(); ctx.arc(sx(WALL), sy(s.y), r / WX * G.w, -Math.PI/2, Math.PI/2); ctx.stroke(); }
+    }
+  }
+  function label(text, x, y, color, align){
+    ctx.font = '700 13px system-ui, sans-serif'; ctx.textAlign = align || 'left'; ctx.textBaseline = 'middle';
+    ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,.65)'; ctx.strokeText(text, x, y);
+    ctx.fillStyle = color; ctx.fillText(text, x, y);
+  }
+  const TC = 2;                           // 惠更斯作圖：每 2 秒重新取一次波前
+  function drawConstruction(){
+    const t = S.t, u = G.w / WX;
+    let t0 = Math.floor(t / TC) * TC; if (t0 < 1) return;
+    const rho = V * (t - t0);
+    if (S.shape === 'plane'){
+      const x0 = V*t0, pts = []; for (let y=2; y<WY; y+=3) pts.push([x0, y]);
+      ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.setLineDash([6,5]); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(sx(x0), 0); ctx.lineTo(sx(x0), G.h); ctx.stroke(); ctx.setLineDash([]);
+      wavelets(pts, rho, u, [1, 0]);
+      ctx.strokeStyle = '#ffd34d'; ctx.lineWidth = 3.5;
+      ctx.beginPath(); ctx.moveTo(sx(x0 + rho), 0); ctx.lineTo(sx(x0 + rho), G.h); ctx.stroke();
+      label('原來的波前', sx(x0) - 6, 14, '#fff', 'right');
+      if (rho > 1.2) label('新波前＝子波的包絡', sx(x0 + rho) + 6, 14, '#ffd34d');
+    } else {
+      const c = {x:5, y:CY}, R0 = V*t0, pts = [];
+      for (let a = -Math.PI/2; a <= Math.PI/2 + 1e-6; a += Math.PI/14){
+        const p = [c.x + R0*Math.cos(a), c.y + R0*Math.sin(a)];
+        if (p[1] > 0 && p[1] < WY && p[0] < WX) pts.push(p);
+      }
+      ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.setLineDash([6,5]); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(sx(c.x), sy(c.y), R0*u, -Math.PI/2, Math.PI/2); ctx.stroke(); ctx.setLineDash([]);
+      for (const p of pts) wavelets([p], rho, u, [p[0]-c.x, p[1]-c.y]);
+      ctx.strokeStyle = '#ffd34d'; ctx.lineWidth = 3.5;
+      ctx.beginPath(); ctx.arc(sx(c.x), sy(c.y), (R0 + rho)*u, -Math.PI/2, Math.PI/2); ctx.stroke();
+      ctx.fillStyle = '#ff5a5a'; ctx.beginPath(); ctx.arc(sx(c.x), sy(c.y), 6, 0, TAU); ctx.fill();
+      if (rho > 1.2) label('新波前＝子波的包絡', sx(c.x + R0 + rho) + 6, sy(c.y) - 14, '#ffd34d');
+    }
+  }
+  function wavelets(pts, rho, u, dir){
+    const ang = Math.atan2(dir[1], dir[0]);
+    for (const [x,y] of pts){
+      // 往前的半圓：亮；往後的半圓：淡（課本作圖只取往前的包絡）
+      ctx.strokeStyle = 'rgba(255,159,26,.95)'; ctx.lineWidth = 1.8;
+      ctx.beginPath(); ctx.arc(sx(x), sy(y), rho*u, ang - Math.PI/2, ang + Math.PI/2); ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,159,26,.25)'; ctx.setLineDash([3,4]); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(sx(x), sy(y), rho*u, ang + Math.PI/2, ang + 3*Math.PI/2); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = '#ff9f1a'; ctx.beginPath(); ctx.arc(sx(x), sy(y), 3.5, 0, TAU); ctx.fill();
+    }
+  }
+
+  function draw(){
+    if (!G.w) return;
+    renderField();
+    const sc = S.scene;
+    if (sc === 1){
+      ctx.fillStyle = '#ff5a5a'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(sx(S.src.x), sy(S.src.y), 7, 0, TAU); ctx.fill(); ctx.stroke();
+      label('石頭', sx(S.src.x) + 11, sy(S.src.y), '#fff');
+    }
+    if (sc === 2 || sc === 3 || sc === 5){
+      const L = F.L;
+      drawWall(L);
+      if (S.showCirc && sc !== 5) drawWavelets(L);
+      if (S.showSrc) drawSources(L);
+      if (V*S.t < WALL) label('平面波 →', sx(Math.max(1, V*S.t - 8)), 16, '#fff');
+    }
+    if (sc === 4 && S.showCons) drawConstruction();
+    if (sc === 4 && S.shape === 'plane' && V*S.t < 3) label('平面波 →', sx(1), 16, '#fff');
+  }
+
+  /* ---------- 文字 ---------- */
+  function caption(){
+    const sc = S.scene;
+    if (sc === 1) return '在水面點一下，就像丟下一顆石頭。被擾動的水會推動身邊<b>每一個方向</b>的鄰居，鄰居再推它的鄰居……所以波從那一點向四面八方擴散，形成<b>圓形</b>的波。';
+    if (sc === 2) return '平面波從左邊打過來，被牆擋住，只有小洞的水能把振動傳過去。牆後的水<b>不知道</b>波原本從哪裡來，只感覺到「小洞那裡的水在上下動」。所以<b>小洞就像一顆新丟下的石頭</b>，在牆後發出圓形波。這個新的圓形波叫做<b>子波</b>。';
+    if (sc === 3) return S.holes < 8
+      ? '每個洞都像一顆新的石頭，各自發出一個圓形的<b>子波</b>（橘色線是它們的波峰）。現在把「洞的數量」往右拉，看看子波彼此交疊後會變成什麼樣子。'
+      : '洞又多又密時，許多子波的波峰連在一起，在前方合成一道<b>直的波前</b>，看起來又像原本的平面波了。如果洞多到整面牆都是洞呢？請按第 4 步。';
+    if (sc === 4) return S.shape === 'plane'
+      ? '把牆拿掉，就像牆上有<b>無限多個洞</b>：波前上的<b>每一點都是新的子波源</b>。每個子波以相同的速率向外擴張，經過一小段時間，所有子波的<b>共同包絡</b>（黃線）就是新的波前。這就是<b>惠更斯原理</b>：波就是這樣一排一排「接力」傳下去的。'
+      : '圓形波也一樣：圓形波前（白虛線）上的每一點發出子波，子波的共同包絡（黃線）是一個更大的圓，也就是新的波前。不管波前是什麼形狀，都可以用這個方法找出下一刻的波前。';
+    const r = S.open / S.lam;
+    return '開口寬度 a ＝ ' + S.open + '，約 <b>' + r.toFixed(1) + ' 個波長</b>。' + (r < 1.6
+      ? '開口很窄，整個開口就像<b>一個子波源</b>，波穿過後向四面八方擴散，幾乎變成圓形波。'
+      : r < 4 ? '開口和波長差不多，波穿過後明顯向兩側散開。'
+      : '開口很寬，中間的子波彼此合成直的波前，大致直直前進；只有<b>邊緣</b>的子波一側沒有鄰居可以合成，所以向後方的陰影區散開。') +
+      ' 波繞過障礙物邊緣、進入陰影區的現象叫<b>繞射</b>。試著固定開口、改變波長。';
+  }
+  function notes(){
+    const sc = S.scene;
+    if (sc === 2 || sc === 3 || sc === 5) return '畫面假設牆會吸收撞上的波（實際的牆會反射）。牆後的亮度已自動調整，方便觀察。';
+    if (sc === 4 && S.showCons) return '淡淡的虛線半圓是往後的子波。課本的作圖只取往前的包絡；為什麼沒有往回傳的波，要到大學才會用更完整的理論說明。';
+    return '';
+  }
+
+  /* ---------- 控制 ---------- */
+  function syncUI(){
+    document.querySelectorAll('#scenes button').forEach(b => b.classList.toggle('on', +b.dataset.s === S.scene));
+    document.querySelectorAll('.only').forEach(el => { el.style.display = el.dataset.only.split(' ').includes(String(S.scene)) ? '' : 'none'; });
+    document.querySelectorAll('[data-shape]').forEach(b => b.classList.toggle('on', b.dataset.shape === S.shape));
+    $('lam').value = S.lam; $('vL').textContent = S.lam.toFixed(1);
+    $('speed').value = S.speed; $('vS').textContent = S.speed + '×';
+    $('holes').value = S.holes; $('vH').textContent = S.holes + ' 個';
+    $('open').value = S.open; $('vA').textContent = S.open + '（' + (S.open / S.lam).toFixed(1) + ' λ）';
+    $('play').textContent = S.playing ? '❚❚ 暫停' : '▶ 播放';
+    $('caption').innerHTML = caption(); $('note').textContent = notes();
+  }
+  function restart(){ S.t = 0; S.playing = true; last = performance.now(); syncUI(); draw(); }
+
+  document.querySelectorAll('#scenes button').forEach(b => b.onclick = () => { S.scene = +b.dataset.s; F = null; restart(); });
+  document.querySelectorAll('[data-shape]').forEach(b => b.onclick = () => { S.shape = b.dataset.shape; restart(); });
+  $('play').onclick = () => { S.playing = !S.playing; last = performance.now(); syncUI(); };
+  $('restart').onclick = restart;
+  $('lam').oninput = e => { S.lam = +e.target.value; F = null; syncUI(); draw(); };
+  $('speed').oninput = e => { S.speed = +e.target.value; syncUI(); };
+  $('holes').oninput = e => { S.holes = +e.target.value; F = null; syncUI(); draw(); };
+  $('open').oninput = e => { S.open = +e.target.value; F = null; syncUI(); draw(); };
+  $('showSrc').onchange = e => { S.showSrc = e.target.checked; draw(); };
+  $('showCirc').onchange = e => { S.showCirc = e.target.checked; draw(); };
+  $('showCons').onchange = e => { S.showCons = e.target.checked; syncUI(); draw(); };
+  cv.addEventListener('pointerdown', e => {
+    if (S.scene !== 1) return;
+    const r = cv.getBoundingClientRect();
+    S.src = {x: (e.clientX - r.left) / r.width * WX, y: (e.clientY - r.top) / r.height * WY};
+    restart();
+  });
+
+  let last = performance.now();
+  function loop(now){
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (S.playing){
+      S.t += dt * S.speed;
+      if (S.scene === 4 && V*S.t > (S.shape === 'plane' ? WX + 4 : 62)) S.t = 0;   // 第 4 步自動重播
+      draw();
+    }
+    requestAnimationFrame(loop);
+  }
+  window.addEventListener('resize', resize);
+  syncUI(); resize(); requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

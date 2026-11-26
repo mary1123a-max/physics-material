@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>用惠更斯原理看反射與折射</title>
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body data-page="lesson" data-root=".." data-lesson="p3-1-5">
+<main class="wrap">
+
+  <div class="lesson-head">
+    <div class="breadcrumb" id="breadcrumb"></div>
+    <h1>用惠更斯原理看反射與折射</h1>
+    <p class="lead">上一節知道「波前上每一點都是子波源」。這一節用同一個想法，推出反射定律和折射定律。</p>
+  </div>
+
+  <!-- ===== 開場提問（要修改文字，直接改這一段） ===== -->
+  <section class="think">
+    <h2>🤔 先想想：手牽手走進泥巴地</h2>
+    <p style="margin:0 0 6px">一排同學手牽手、肩並肩，在操場上整齊地往前走。他們斜斜地走向一片泥巴地，一踩進泥巴就會<b>走得比較慢</b>。因為是斜著走過去，隊伍其中一端的同學會先踩進泥巴。</p>
+    <p style="margin:0">這排隊伍走進泥巴地之後，前進的方向會怎麼變？<br>
+    （A）方向不變<br>（B）轉向，變成比較「正對」泥巴地前進（更接近垂直走進去）<br>（C）轉向，變成更「斜」地走進泥巴地<br>（D）隊伍會散掉</p>
+    <p class="small muted" style="margin:6px 0 0">先選一個答案。這一排隊伍就像一道波前，答案會在模擬的「折射定律」裡揭曉。</p>
+  </section>
+
+  <section class="card">
+    <h2>🎯 學習目標</h2>
+    <ol class="goals">
+      <li>說明波前斜射到界面時，界面上各點<b>依序</b>開始發出子波。</li>
+      <li>用惠更斯作圖法畫出反射波前與折射波前。</li>
+      <li>由兩個直角三角形推導反射定律 θ₁ = θ₁′。</li>
+      <li>推導折射定律 sin θ₁ ／ sin θ₂ = v₁ ／ v₂，並說明波進入慢的介質會偏向法線。</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>🔬 互動實驗：一步一步看子波長大</h2>
+    <p class="small muted" style="margin-top:0">先選「反射定律」，從頭按「下一步」到最後；再換「折射定律」做一次。每一步都會慢動作播放，可以清楚看到每個子波怎麼長大。也可以拖曳下方的時間軸自由觀察。</p>
+    <iframe class="sim-frame" src="../sims/huygens-refl-refr.html" title="用惠更斯原理推導反射與折射" loading="lazy"></iframe>
+    <div class="sim-actions"><a class="btn" href="../sims/huygens-refl-refr.html" target="_blank" rel="noopener">在新分頁開啟模擬（適合投影） ↗</a></div>
+  </section>
+
+  <section class="card">
+    <h2>🧭 操作與討論</h2>
+    <p class="small muted" style="margin-top:0">先自己回答，再點開對照。</p>
+
+    <h3>反射定律</h3>
+    <details class="guide"><summary>1. 界面上的 5 個點是同時開始發出子波的嗎？誰先、誰後？</summary>
+      <div class="hint">不是同時。波前是斜的，所以第 1 點最先被碰到、最先開始發出子波，第 5 點最後才被碰到。<b>這是整個推導的關鍵。</b></div></details>
+    <details class="guide"><summary>2. 波前碰到第 5 點的那一刻，哪個子波最大？為什麼？</summary>
+      <div class="hint">第 1 點的子波最大，第 5 點的子波才剛出生、半徑是 0。所有子波長大的速率相同，越早出生的長得越久，所以越大。</div></details>
+    <details class="guide"><summary>3. 看子波半徑 r₁、r₂、r₃……，相鄰兩個子波的半徑差都一樣嗎？這代表什麼？</summary>
+      <div class="hint">一樣。相鄰兩點相距相同，波前碰到它們的時間差也相同，所以半徑差都相同。大小均勻遞減的一排圓，共同的切線剛好是一條<b>直線</b>，所以反射波前也是平面波前。</div></details>
+    <details class="guide"><summary>4. 證明的三角形中，為什麼「波前和界面的夾角」就等於入射角？</summary>
+      <div class="hint">入射線和波前垂直，法線和界面垂直。兩條線各轉 90° 之後，夾角不變，所以波前和界面的夾角等於入射線和法線的夾角，也就是入射角 θ₁。反射角也是同樣的道理。</div></details>
+    <details class="guide"><summary>5. 用兩個直角三角形說明為什麼入射角等於反射角。</summary>
+      <div class="hint">兩個直角三角形有共同的斜邊 AB′。在同一段時間 t 內，入射波前從 B 走到 B′（BB′ = v₁t），A 點的子波長到 D（AD = v₁t）。反射波和入射波在同一個介質，速率相同，所以 BB′ = AD。斜邊相同、一股相同，兩個直角三角形全等，θ₁ = θ₁′。</div></details>
+
+    <h3>折射定律</h3>
+    <details class="guide"><summary>6. 換成「折射定律」，v₂ = 0.60 v₁。和反射相比，子波有什麼不同？</summary>
+      <div class="hint">子波在介質 2 長大，速率只有 v₁ 的 0.6 倍，所以同樣的時間裡長得比較小。最大的子波半徑 AD = v₂t，比入射波前走的距離 BB′ = v₁t 短。</div></details>
+    <details class="guide"><summary>7. 子波變小，新的波前（包絡）會怎麼轉？折射線偏向法線還是偏離法線？回頭看「先想想」選對了嗎？</summary>
+      <div class="hint">先進入介質 2 的部分走得慢，像被「拖住」一樣，波前轉向、折射線<b>偏向法線</b>。就像手牽手的隊伍：先踩進泥巴的那一端先變慢，還在操場上的那一端照樣走得快，整排就轉向，變成比較正對泥巴地，答案是（B）。</div></details>
+    <details class="guide"><summary>8. 把 v₂ 調成大於 v₁（例如 1.3 v₁）。折射線偏向還是偏離法線？</summary>
+      <div class="hint">偏離法線，折射角大於入射角。這時子波長得比入射波前走得還快。</div></details>
+    <details class="guide"><summary>9. 改變入射角幾次，比較讀數區的 sin θ₁ ／ sin θ₂ 和 v₁ ／ v₂。你發現什麼？</summary>
+      <div class="hint">不管入射角是多少，sin θ₁ ／ sin θ₂ 永遠等於 v₁ ／ v₂。由三角形來看：sin θ₁ = v₁t ／ AB′，sin θ₂ = v₂t ／ AB′，兩式相除，AB′ 和 t 都消掉了。這就是折射定律。</div></details>
+    <details class="guide"><summary>10. 讓 v₂ = 1.5 v₁，再把入射角調大到 50° 以上。發生什麼事？</summary>
+      <div class="hint">子波長得太快，找不到一條和所有子波都相切的線，所以沒有折射波，波全部反射回去，這叫<b>全反射</b>。在幾何光學會再詳細學到。</div></details>
+  </section>
+
+  <section class="card">
+    <h2>📘 觀念整理</h2>
+
+    <h3>1. 關鍵：子波源是一個接一個開始的</h3>
+    <div class="key">波前斜射到界面時，界面上的點<b>依序</b>被碰到，先被碰到的點先開始發出子波。所以同一時刻，界面上的子波大小不同，而且半徑均勻遞減，它們的包絡是一條直線，也就是新的波前。</div>
+
+    <h3>2. 波前的角度 = 光線的角度</h3>
+    <p>光線和波前垂直、法線和界面垂直，所以「波前與界面的夾角」等於「光線與法線的夾角」。</p>
+
+    <h3>3. 反射定律</h3>
+    <table class="compare">
+      <tr><th>直角三角形</th><th>斜邊</th><th>對邊</th><th>結果</th></tr>
+      <tr><td>△ABB′（入射）</td><td>AB′</td><td>BB′ = v₁t</td><td>sin θ₁ = v₁t ／ AB′</td></tr>
+      <tr><td>△ADB′（反射）</td><td>AB′</td><td>AD = v₁t</td><td>sin θ₁′ = v₁t ／ AB′</td></tr>
+    </table>
+    <div class="key">反射波在同一介質中，速率不變，所以 <b>θ₁ = θ₁′：入射角等於反射角</b>。</div>
+
+    <h3>4. 折射定律（司乃耳定律）</h3>
+    <p>折射時，A 點的子波在介質 2 長大，AD = v₂t，所以 sin θ₂ = v₂t ／ AB′。兩式相除：</p>
+    <p><span class="formula">sin θ₁ ／ sin θ₂ = v₁ ／ v₂</span></p>
+    <div class="key">進入波速較慢的介質（v₂ &lt; v₁）：偏向法線。進入波速較快的介質（v₂ &gt; v₁）：偏離法線。</div>
+    <p class="small muted">補充：波的頻率由波源決定，穿過界面時不變。因為 v = fλ，所以也可以寫成 sin θ₁ ／ sin θ₂ = λ₁ ／ λ₂。對光來說，折射率 n = c ／ v，折射定律可寫成 n₁ sin θ₁ = n₂ sin θ₂，在幾何光學會再學到。</p>
+
+    <h3>5. 用隊伍來想</h3>
+    <table class="compare">
+      <tr><th>手牽手的隊伍</th><th>波</th></tr>
+      <tr><td>一整排的同學</td><td>波前</td></tr>
+      <tr><td>泥巴地裡走得比較慢</td><td>介質 2 的波速 v₂ 比較小</td></tr>
+      <tr><td>先踩進泥巴的人先變慢，整排轉向</td><td>先碰到界面的子波源先開始，但長得慢，波前偏向法線</td></tr>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>✏️ 檢核練習</h2>
+    <div data-quiz="p3-1-5"></div>
+  </section>
+
+  <section class="assign" id="assignment"></section>
+  <section class="card understood" id="understood"></section>
+  <nav class="pager" id="pager"></nav>
+</main>
+<script src="../data/course.js"></script>
+<script src="../data/questions.js"></script>
+<script src="../assets/js/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>用惠更斯原理推導反射定律與折射定律</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#f5f7fa;color:#1d2733;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei","Noto Sans TC","Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1040px;margin:0 auto;padding:16px 12px 36px}
+  h1{font-size:1.35rem;margin:4px 0 2px}
+  .sub{color:#6b7785;font-size:.92rem;margin:0 0 12px}
+  .card{background:#fff;border:1px solid #e3e8ee;border-radius:14px;padding:12px 14px;margin-bottom:12px}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .tabs button{appearance:none;border:1px solid #d5dbe2;background:#fff;border-radius:10px;padding:9px 18px;font:inherit;font-size:.98rem;font-weight:800;cursor:pointer;color:#1d2733}
+  .tabs button.on{background:#0d1b2a;border-color:#0d1b2a;color:#ffd34d}
+  .stage{background:#0d1b2a;border-radius:12px;overflow:hidden}
+  canvas{display:block;width:100%}
+  .stepper{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .btn{appearance:none;border:1px solid #d5dbe2;background:#fff;color:#1d2733;border-radius:10px;padding:9px 14px;font:inherit;font-size:.95rem;font-weight:800;cursor:pointer;min-height:42px}
+  .btn.primary{background:#0d1b2a;border-color:#0d1b2a;color:#ffd34d;min-width:150px}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .dots{display:flex;gap:4px;flex-wrap:wrap;margin-left:4px}
+  .dots span{width:12px;height:12px;border-radius:50%;background:#d5dbe2;cursor:pointer}
+  .dots span.done{background:#7fb3d5} .dots span.cur{background:#ff9f1a;box-shadow:0 0 0 3px #ffe2b8}
+  .stepno{font-size:.85rem;color:#6b7785;margin-left:auto;font-variant-numeric:tabular-nums}
+  .caption{margin-top:10px;padding:12px 14px;border-radius:10px;background:#0f2433;color:#e9f3f8;font-size:1rem;line-height:1.7}
+  .caption b{color:#ffd34d} .caption .o{color:#ffb35c;font-weight:700} .caption .c{color:#7fe0ff;font-weight:700}
+  .proof{margin-top:10px;padding:12px 14px;border-radius:10px;background:#fff8e6;border:1px solid #f3dcae;font-size:1rem;line-height:1.9;display:none;font-variant-numeric:tabular-nums}
+  .proof b{color:#8a5200}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px 20px}
+  .ctl label{display:flex;justify-content:space-between;font-size:.86rem;color:#6b7785}
+  .ctl label b{color:#1d2733;font-variant-numeric:tabular-nums}
+  .ctl input[type=range]{width:100%;height:26px;accent-color:#0d1b2a}
+  .checks{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.9rem;margin-top:10px;padding-top:10px;border-top:1px dashed #e3e8ee}
+  .checks label{display:flex;align-items:center;gap:6px;cursor:pointer}
+  .checks input{width:18px;height:18px;accent-color:#0d1b2a}
+  .timeline{display:flex;align-items:center;gap:10px;margin-top:10px}
+  .timeline input{flex:1;accent-color:#ff9f1a}
+  .timeline span{font-size:.85rem;color:#6b7785;min-width:90px;text-align:right;font-variant-numeric:tabular-nums}
+  .readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:10px}
+  .ro{background:#f3f6f9;border:1px solid #e3e8ee;border-radius:10px;padding:7px 10px}
+  .ro .k{font-size:.76rem;color:#6b7785} .ro .v{font-size:1.05rem;font-weight:800;font-variant-numeric:tabular-nums}
+  html.embedded .standalone-only{display:none}
+  html.embedded body{background:transparent}
+  html.embedded .wrap{padding:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="standalone-only">用惠更斯原理推導反射定律與折射定律</h1>
+  <p class="sub standalone-only">一步一步看：波前碰到界面的每一點，那一點就開始長出子波。</p>
+
+  <div class="card">
+    <div class="tabs">
+      <button data-mode="refl" class="on">反射定律</button>
+      <button data-mode="refr">折射定律</button>
+    </div>
+    <div class="stage"><canvas id="cv" aria-label="平面波斜射到界面，界面上各點依序發出子波"></canvas></div>
+
+    <div class="stepper">
+      <button class="btn" id="prev">◀ 上一步</button>
+      <button class="btn primary" id="next">下一步 ▶</button>
+      <button class="btn" id="replay">↺ 從頭</button>
+      <div class="dots" id="dots"></div>
+      <span class="stepno" id="stepno"></span>
+    </div>
+    <div class="caption" id="caption"></div>
+    <div class="proof" id="proof"></div>
+
+    <div class="timeline">
+      <input type="range" id="tSlider" min="0" max="1000" value="0" aria-label="時間（自由拖曳）">
+      <span id="tVal"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grid">
+      <div class="ctl"><label>入射角 θ₁ <b id="vTh"></b></label><input type="range" id="th" min="15" max="70" step="5"></div>
+      <div class="ctl"><label>界面上的子波源數量 <b id="vN"></b></label><input type="range" id="N" min="3" max="9" step="1"></div>
+      <div class="ctl" id="ratioCtl"><label>介質 2 的波速 v₂ ＝ <b id="vR"></b></label><input type="range" id="ratio" min="0.4" max="1.5" step="0.05"></div>
+    </div>
+    <div class="checks">
+      <label><input type="checkbox" id="cRays" checked> 入射線</label>
+      <label><input type="checkbox" id="cEnv"> 新的波前（包絡）</label>
+      <label><input type="checkbox" id="cOut"> <span id="cOutTxt">反射線</span></label>
+      <label><input type="checkbox" id="cProof"> 證明用的三角形</label>
+      <label><input type="checkbox" id="cR" checked> 標示子波半徑</label>
+    </div>
+    <div class="readouts" id="readouts"></div>
+  </div>
+</div>
+
+<script>
+/* 被嵌入單元頁時：隱藏標題並回報高度給外層頁面 */
+(function(){
+  if (window.parent === window) return;
+  document.documentElement.classList.add("embedded");
+  const send = () => window.parent.postMessage({type:"sim-height", h: document.documentElement.scrollHeight}, "*");
+  window.addEventListener("load", send);
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+
+(function(){
+  const WX = 60, WY = 40, X0 = 11, SPAN = 36, V1 = 6, LEAD = 1.0, TAU = Math.PI*2, DEG = Math.PI/180;
+  const S = {mode:'refl', th:40, N:5, ratio:0.6, step:0, t:0, target:null,
+             rays:true, env:false, out:false, proof:false, showR:true};
+  const $ = id => document.getElementById(id);
+  const cv = $('cv'), ctx = cv.getContext('2d');
+  let G = {}, YB = 27;                       // 界面高度：反射時往下移，留空間給往上長的子波
+
+  /* ---------- 幾何 ---------- */
+  const th1 = () => S.th * DEG;
+  const d  = () => [Math.sin(th1()), Math.cos(th1())];                // 入射方向（y 向下為正）
+  const v2 = () => S.mode === 'refl' ? V1 : V1 * S.ratio;               // 子波在哪個介質長大、速率多少
+  const sin2 = () => S.mode === 'refl' ? Math.sin(th1()) : S.ratio * Math.sin(th1());
+  const tir = () => S.mode === 'refr' && sin2() >= 1;
+  const dOut = () => {                                                  // 反射或折射方向
+    const s = Math.min(1, sin2()), c = Math.sqrt(1 - s*s);
+    return S.mode === 'refl' ? [s, -c] : [s, c];
+  };
+  const P = u => [X0 + u * SPAN / (S.N - 1), YB];                       // 界面上第 u 點（可為小數）
+  const dot = (a,b) => a[0]*b[0] + a[1]*b[1];
+  const s0 = () => dot(P(0), d()) - V1 * LEAD;                          // t = 0 時波前的位置
+  const sAt = t => s0() + V1 * t;
+  const tHit = u => (dot(P(u), d()) - s0()) / V1;                        // 波前碰到第 u 點的時刻
+  const tEnd = () => tHit(S.N - 1);
+  const rOf = (i, t) => Math.max(0, v2() * (t - tHit(i)));              // 第 i 個子波的半徑
+
+  /* ---------- 步驟 ---------- */
+  function steps(){
+    const N = S.N, list = [{t:0, kind:'intro'}];
+    for (let i=0;i<N;i++) list.push({t:tHit(i), kind:'hit', i});
+    list.push({t:tEnd(), kind:'env'}, {t:tEnd(), kind:'out'}, {t:tEnd(), kind:'proof'});
+    return list;
+  }
+  function applyStep(animate){
+    const st = steps()[S.step];
+    S.env = S.step >= S.N + 1; S.out = S.step >= S.N + 2; S.proof = S.step >= S.N + 3;
+    if (animate && st.t > S.t) { S.target = st.t; last = performance.now(); } else { S.t = st.t; S.target = null; }
+    syncUI(); draw();
+  }
+
+  /* ---------- 版面 ---------- */
+  function resize(){
+    const dpr = window.devicePixelRatio || 1;
+    const w = cv.parentElement.clientWidth, h = Math.round(w * WY / WX);
+    cv.style.height = h + 'px'; cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    G = {w, h, u: w / WX}; draw();
+  }
+  const sx = X => X * G.u, sy = Y => Y * G.u;
+  const pt = p => [sx(p[0]), sy(p[1])];
+
+  function line(a, b, color, width, dash){
+    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.setLineDash(dash || []);
+    ctx.beginPath(); ctx.moveTo(...pt(a)); ctx.lineTo(...pt(b)); ctx.stroke(); ctx.setLineDash([]);
+  }
+  function arrowHead(a, b, color, size){
+    const [x1,y1] = pt(a), [x2,y2] = pt(b), ang = Math.atan2(y2-y1, x2-x1);
+    ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(x2,y2);
+    ctx.lineTo(x2 - size*Math.cos(ang - 0.4), y2 - size*Math.sin(ang - 0.4));
+    ctx.lineTo(x2 - size*Math.cos(ang + 0.4), y2 - size*Math.sin(ang + 0.4)); ctx.closePath(); ctx.fill();
+  }
+  function label(text, p, color, align, dy){
+    const [x,y] = pt(p);
+    ctx.font = '800 14px system-ui, sans-serif'; ctx.textAlign = align || 'center'; ctx.textBaseline = 'middle';
+    ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(13,27,42,.95)'; ctx.strokeText(text, x, y + (dy||0));
+    ctx.fillStyle = color; ctx.fillText(text, x, y + (dy||0));
+  }
+  function angleArc(c, a1, a2, r, color, text){
+    const [x,y] = pt(c); let s = a1, e = a2;
+    if (((e - s) % TAU + TAU) % TAU > Math.PI) [s, e] = [e, s];
+    ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(x, y, r, s, e); ctx.stroke();
+    const m = s + (((e - s) % TAU + TAU) % TAU) / 2;
+    label(text, [ (x + (r + 16) * Math.cos(m)) / G.u, (y + (r + 16) * Math.sin(m)) / G.u ], color);
+  }
+  const ang = (a, b) => Math.atan2(sy(b[1]) - sy(a[1]), sx(b[0]) - sx(a[0]));
+  function rightMark(c, a, b, color){
+    const s = 1.1, ua = norm([a[0]-c[0], a[1]-c[1]]), ub = norm([b[0]-c[0], b[1]-c[1]]);
+    const p1 = [c[0]+ua[0]*s, c[1]+ua[1]*s], p2 = [p1[0]+ub[0]*s, p1[1]+ub[1]*s], p3 = [c[0]+ub[0]*s, c[1]+ub[1]*s];
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(...pt(p1)); ctx.lineTo(...pt(p2)); ctx.lineTo(...pt(p3)); ctx.stroke();
+  }
+  const norm = v => { const l = Math.hypot(v[0], v[1]) || 1; return [v[0]/l, v[1]/l]; };
+
+  /* ---------- 繪圖 ---------- */
+  function draw(){
+    if (!G.w) return;
+    const t = S.t, D = d(), N = S.N, refl = S.mode === 'refl';
+    ctx.clearRect(0,0,G.w,G.h);
+
+    // 兩個介質
+    ctx.fillStyle = '#0d1b2a'; ctx.fillRect(0, 0, G.w, sy(YB));
+    if (refl){
+      ctx.fillStyle = '#26323e'; ctx.fillRect(0, sy(YB), G.w, G.h - sy(YB));
+      ctx.strokeStyle = 'rgba(255,255,255,.08)'; ctx.lineWidth = 1;
+      for (let x = -WY; x < WX; x += 1.6){ ctx.beginPath(); ctx.moveTo(sx(x), sy(WY)); ctx.lineTo(sx(x + WY - YB), sy(YB)); ctx.stroke(); }
+      label('反射面', [WX - 2, YB + 2.2], '#9aa6b2', 'right');
+    } else {
+      ctx.fillStyle = '#123a52'; ctx.fillRect(0, sy(YB), G.w, G.h - sy(YB));
+      label('介質 1：波速 v₁', [WX - 2, YB - 2], '#9fc6dd', 'right');
+      label('介質 2：波速 v₂ ＝ ' + S.ratio.toFixed(2) + ' v₁', [WX - 2, YB + 2.2], '#9fe3ff', 'right');
+    }
+    line([0, YB], [WX, YB], '#c9d2da', 2);
+
+    // 法線（在第一點與最後一點）
+    [0, N-1].forEach(i => line([P(i)[0], YB - 9], [P(i)[0], YB + 9], 'rgba(255,255,255,.35)', 1.2, [4,4]));
+
+    // 入射線
+    const s = sAt(t), far = V1 * LEAD + SPAN + 6;
+    if (S.rays){
+      for (let i=0;i<N;i++){
+        const p = P(i), a = [p[0] - D[0]*far, p[1] - D[1]*far];
+        line(a, p, 'rgba(255,255,255,.28)', 1.2);
+        const mid = [p[0] - D[0]*4, p[1] - D[1]*4]; arrowHead([mid[0]-D[0], mid[1]-D[1]], mid, 'rgba(255,255,255,.5)', 8);
+      }
+    }
+
+    // 入射波前：還沒碰到界面的那一段
+    let uHit = -1;
+    for (let k=0;k<=400;k++){ const u = (N-1)*k/400; if (tHit(u) <= t) uHit = u; }
+    const wfPoint = u => { const p = P(u), dist = dot(p, D) - s; return [p[0] - D[0]*dist, p[1] - D[1]*dist]; };
+    const uA = Math.max(0, uHit);
+    if (uA < N-1 - 1e-6){
+      line(wfPoint(uA), wfPoint(N-1), '#ffffff', 3.5);
+      label('入射波前', wfPoint(N-1), '#ffffff', 'left', -14);
+    }
+
+    // 子波：碰到界面的點才開始長大
+    for (let i=0;i<N;i++){
+      const p = P(i), hit = t >= tHit(i) - 1e-9, r = rOf(i, t);
+      if (hit && r > 0.02){
+        ctx.strokeStyle = 'rgba(255,159,26,.95)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(sx(p[0]), sy(p[1]), r * G.u, refl ? Math.PI : 0, refl ? TAU : Math.PI); ctx.stroke();
+        if (S.showR && r > 1.6){
+          const tip = [p[0], p[1] + (refl ? -r : r)];
+          line(p, tip, 'rgba(255,159,26,.45)', 1, [3,3]);
+          label('r' + sub(i+1) + '＝' + r.toFixed(1), [p[0] + 0.3, p[1] + (refl ? -r - 1.1 : r + 1.1)], '#ffb35c', 'center');
+        }
+      }
+      // 子波源
+      const fresh = hit && t - tHit(i) < 0.5;
+      ctx.fillStyle = hit ? '#ff9f1a' : '#56616c'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(sx(p[0]), sy(p[1]), fresh ? 8 : 6, 0, TAU); ctx.fill(); ctx.stroke();
+      if (fresh){ ctx.strokeStyle = 'rgba(255,159,26,.6)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(sx(p[0]), sy(p[1]), 14, 0, TAU); ctx.stroke(); }
+      label(String(i+1), [p[0], p[1] + (refl ? 1.8 : -1.8)], hit ? '#ffd9a8' : '#8a96a3');
+    }
+
+    // 新的波前（包絡）與反射／折射線
+    const O = dOut(), tangent = i => { const p = P(i), r = rOf(i, t); return [p[0] + O[0]*r, p[1] + O[1]*r]; };
+    if (!tir() && uHit >= 0){
+      const env0 = tangent(0), envE = P(uHit);
+      if (S.out){
+        for (let i=0;i<N;i++) if (t >= tHit(i) && rOf(i,t) > 0.3){
+          const p = P(i), q = tangent(i), ext = [q[0] + O[0]*3, q[1] + O[1]*3];
+          line(p, ext, '#7fe0ff', 2); arrowHead(q, ext, '#7fe0ff', 9);
+        }
+      }
+      if (S.env){
+        line(env0, envE, '#ffd34d', 4);
+        for (let i=0;i<N;i++) if (t >= tHit(i) && rOf(i,t) > 0.1){
+          const q = tangent(i); ctx.fillStyle = '#ffd34d'; ctx.beginPath(); ctx.arc(...pt(q), 4, 0, TAU); ctx.fill();
+        }
+        const lp = [env0[0] + (envE[0]-env0[0])*0.35, env0[1] + (envE[1]-env0[1])*0.35];
+        label(refl ? '反射波前' : '折射波前', [lp[0] - O[0]*2.2, lp[1] - O[1]*2.2], '#ffd34d', 'center');
+      }
+    }
+
+    // 證明用的三角形
+    if (S.proof && !tir() && t >= tEnd() - 1e-6) drawProof();
+
+    updateText();
+  }
+  const sub = n => String(n).split('').map(c => '₀₁₂₃₄₅₆₇₈₉'[+c]).join('');
+
+  function geomProof(){
+    const D = d(), O = dOut(), A = P(0), B2 = P(S.N - 1);
+    const L1 = V1 * (tEnd() - tHit(0)), L2 = v2() * (tEnd() - tHit(0));
+    const B = [B2[0] - D[0]*L1, B2[1] - D[1]*L1], Dp = [A[0] + O[0]*L2, A[1] + O[1]*L2];
+    return {A, B, B2, Dp, L1, L2, AB: Math.hypot(B2[0]-A[0], B2[1]-A[1])};
+  }
+  function drawProof(){
+    const g = geomProof(), refl = S.mode === 'refl';
+    const fillTri = (a,b,c,color) => { ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(...pt(a)); ctx.lineTo(...pt(b)); ctx.lineTo(...pt(c)); ctx.closePath(); ctx.fill(); };
+    fillTri(g.A, g.B, g.B2, 'rgba(255,255,255,.12)');
+    fillTri(g.A, g.Dp, g.B2, 'rgba(255,211,77,.16)');
+    line(g.A, g.B, '#ffffff', 2); line(g.B, g.B2, '#ffffff', 3); line(g.A, g.B2, '#ff6b9a', 3);
+    line(g.A, g.Dp, '#ffd34d', 3); line(g.Dp, g.B2, '#ffd34d', 2);
+    rightMark(g.B, g.A, g.B2, '#fff'); rightMark(g.Dp, g.A, g.B2, '#ffd34d');
+    angleArc(g.A, ang(g.A, g.B2), ang(g.A, g.B), 34, '#ffffff', 'θ₁');
+    angleArc(g.B2, ang(g.B2, g.A), ang(g.B2, g.Dp), 34, '#ffd34d', refl ? 'θ₁′' : 'θ₂');
+    label('A', g.A, '#ff9fbd', 'right', refl ? 12 : -12);
+    label('B′', g.B2, '#ff9fbd', 'left', refl ? 12 : -12);
+    label('B', g.B, '#fff', 'right', -10);
+    label('D', g.Dp, '#ffd34d', 'right', refl ? -10 : 10);
+    const mid = (a,b) => [(a[0]+b[0])/2, (a[1]+b[1])/2];
+    label('v₁t', mid(g.B, g.B2), '#fff', 'left', -12);
+    label(refl ? 'v₁t' : 'v₂t', mid(g.A, g.Dp), '#ffd34d', 'right', refl ? -6 : 6);
+  }
+
+  /* ---------- 文字 ---------- */
+  function caption(){
+    const st = steps()[S.step], N = S.N, refl = S.mode === 'refl', v = refl ? 'v₁' : 'v₂';
+    if (st.kind === 'intro') return refl
+      ? '一道平面波斜斜地射向反射面，白色粗線是<b>入射波前</b>，細線是入射線（和波前垂直）。界面上標了 ' + N + ' 個點。<b>按「下一步」</b>，看波前一點一點碰到界面。'
+      : '一道平面波從介質 1 斜斜地射向介質 2。介質 2 的波速是 v₂ ＝ ' + S.ratio.toFixed(2) + ' v₁。界面上標了 ' + N + ' 個點。<b>按「下一步」</b>，看波前一點一點碰到界面。';
+    if (st.kind === 'hit'){
+      const i = st.i;
+      if (i === 0) return '波前先碰到<span class="o">第 1 點</span>。這一點的水（或介質）開始振動，成為<b>新的子波源</b>，子波以速率 ' + v + ' 向' + (refl ? '上（回到介質 1）' : '下（進入介質 2）') + '長大。';
+      const more = i === N - 1 ? '波前的最後一端也碰到界面了。注意：<b>越早被碰到的點，子波長得越大</b>，第 1 點的子波最大，第 ' + N + ' 點的子波才剛出生。' : '波前繼續往前，碰到<span class="o">第 ' + (i+1) + ' 點</span>，它也開始發出子波。先出生的子波已經長大了。';
+      return more + (S.showR ? '看看每個子波的半徑 r：每一步都多長了一樣的量。' : '');
+    }
+    if (st.kind === 'env') return tir()
+      ? '子波在介質 2 長得太快，所有子波<b>找不到共同的切線</b>，所以沒有折射波前（這叫全反射，會在幾何光學學到）。請把 v₂ 調小或把入射角調小。'
+      : '畫一條和所有子波都相切的線，這就是<b>新的波前（包絡）</b>，也就是' + (refl ? '反射波' : '折射波') + '的波前。每個子波大小不同，但剛好排成一條直線。';
+    if (st.kind === 'out') return tir() ? '沒有折射波前，也就沒有折射線。'
+      : '把每個子波源和它的切點連起來，這條線和新的波前垂直，就是' + (refl ? '<span class="c">反射線</span>' : '<span class="c">折射線</span>') + '。所有' + (refl ? '反射線' : '折射線') + '彼此平行。';
+    if (tir()) return '目前是全反射的情況，無法畫出證明用的三角形。';
+    return '只看第 1 點 A 和最後一點 B′。波前從 B 走到 B′ 的時間 t 內，A 的子波長到 D。兩個直角三角形有<b>共同的斜邊 AB′</b>。' +
+      '（波前和界面的夾角，等於光線和法線的夾角，所以三角形裡的 θ 就是入射角與' + (refl ? '反射角' : '折射角') + '。）';
+  }
+  function proofText(){
+    if (!(S.proof && !tir() && S.t >= tEnd() - 1e-6)) return '';
+    const g = geomProof(), refl = S.mode === 'refl';
+    const s1 = g.L1 / g.AB, s2 = g.L2 / g.AB;
+    if (refl) return '<b>△ABB′</b>：sin θ₁ ＝ BB′ ／ AB′ ＝ v₁t ／ AB′ ＝ ' + g.L1.toFixed(1) + ' ／ ' + g.AB.toFixed(1) + ' ＝ ' + s1.toFixed(3) + '<br>' +
+      '<b>△ADB′</b>：sin θ₁′ ＝ AD ／ AB′ ＝ v₁t ／ AB′ ＝ ' + g.L2.toFixed(1) + ' ／ ' + g.AB.toFixed(1) + ' ＝ ' + s2.toFixed(3) + '<br>' +
+      '反射波和入射波在同一個介質，子波長大的速率相同，所以 BB′ ＝ AD，<b>θ₁ ＝ θ₁′：入射角等於反射角</b>。';
+    return '<b>△ABB′</b>：sin θ₁ ＝ BB′ ／ AB′ ＝ v₁t ／ AB′ ＝ ' + g.L1.toFixed(1) + ' ／ ' + g.AB.toFixed(1) + ' ＝ ' + s1.toFixed(3) + '<br>' +
+      '<b>△ADB′</b>：sin θ₂ ＝ AD ／ AB′ ＝ v₂t ／ AB′ ＝ ' + g.L2.toFixed(1) + ' ／ ' + g.AB.toFixed(1) + ' ＝ ' + s2.toFixed(3) + '<br>' +
+      '兩式相除，AB′ 和 t 都消掉：<b>sin θ₁ ／ sin θ₂ ＝ v₁ ／ v₂</b>（＝ ' + (s1/s2).toFixed(3) + '）。這就是<b>折射定律（司乃耳定律）</b>。' +
+      (S.ratio < 1 ? '波進入較慢的介質，子波長得慢，波前被「拖住」，所以偏向法線。' : S.ratio > 1 ? '波進入較快的介質，子波長得快，所以偏離法線。' : '');
+  }
+  function updateText(){
+    const list = steps(), n = list.length;
+    $('caption').innerHTML = caption();
+    const pt = proofText(); $('proof').innerHTML = pt; $('proof').style.display = pt ? 'block' : 'none';
+    $('stepno').textContent = '第 ' + (S.step + 1) + ' ／ ' + n + ' 步';
+    $('prev').disabled = S.step === 0; $('next').disabled = S.step === n - 1;
+    $('next').textContent = S.step === n - 1 ? '完成 ✓' : '下一步 ▶';
+    const dots = $('dots'); if (dots.children.length !== n){ dots.innerHTML = ''; for (let i=0;i<n;i++){ const sp = document.createElement('span'); sp.title = '第 ' + (i+1) + ' 步'; sp.onclick = () => { S.step = i; applyStep(i > S.step); }; dots.appendChild(sp); } }
+    [...dots.children].forEach((sp, i) => { sp.className = i < S.step ? 'done' : i === S.step ? 'cur' : ''; });
+    const tm = tEnd() + 0.6; $('tVal').textContent = 't ＝ ' + S.t.toFixed(2) + ' s'; if (!scrubbing) $('tSlider').value = Math.round(S.t / tm * 1000);
+    const th2 = tir() ? '—（全反射）' : (Math.asin(sin2()) / DEG).toFixed(1) + '°';
+    $('readouts').innerHTML = S.mode === 'refl'
+      ? ro('入射角 θ₁', S.th + '°') + ro('反射角 θ₁′', th2) + ro('子波速率', 'v₁（同一介質）')
+      : ro('入射角 θ₁', S.th + '°') + ro('折射角 θ₂', th2) + ro('sin θ₁ ／ sin θ₂', tir() ? '—' : (Math.sin(th1()) / sin2()).toFixed(3)) + ro('v₁ ／ v₂', (1 / S.ratio).toFixed(3));
+  }
+  const ro = (k, v) => '<div class="ro"><div class="k">' + k + '</div><div class="v">' + v + '</div></div>';
+
+  /* ---------- 控制 ---------- */
+  function syncUI(){
+    YB = S.mode === 'refl' ? 27 : 20;
+    document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('on', b.dataset.mode === S.mode));
+    $('ratioCtl').style.display = S.mode === 'refr' ? '' : 'none';
+    $('th').value = S.th; $('vTh').textContent = S.th + '°';
+    $('N').value = S.N; $('vN').textContent = S.N + ' 個';
+    $('ratio').value = S.ratio; $('vR').textContent = S.ratio.toFixed(2) + ' v₁';
+    $('cRays').checked = S.rays; $('cEnv').checked = S.env; $('cOut').checked = S.out; $('cProof').checked = S.proof; $('cR').checked = S.showR;
+    $('cOutTxt').textContent = S.mode === 'refl' ? '反射線' : '折射線';
+  }
+  function reset(){ S.step = 0; applyStep(false); }
+
+  document.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { S.mode = b.dataset.mode; reset(); });
+  $('next').onclick = () => { if (S.target !== null){ S.t = S.target; S.target = null; } if (S.step < steps().length - 1){ S.step++; applyStep(true); } };
+  $('prev').onclick = () => { if (S.step > 0){ S.step--; applyStep(false); } };
+  $('replay').onclick = reset;
+  $('th').oninput = e => { S.th = +e.target.value; S.step = Math.min(S.step, steps().length - 1); applyStep(false); };
+  $('N').oninput = e => {
+    const old = S.N; S.N = +e.target.value;
+    S.step = S.step > old ? S.N + (S.step - old) : Math.min(S.step, S.N);   // 已到包絡之後的步驟就保持在同一階段
+    applyStep(false);
+  };
+  $('ratio').oninput = e => { S.ratio = +e.target.value; applyStep(false); };
+  $('cRays').onchange = e => { S.rays = e.target.checked; draw(); };
+  $('cEnv').onchange = e => { S.env = e.target.checked; draw(); };
+  $('cOut').onchange = e => { S.out = e.target.checked; draw(); };
+  $('cProof').onchange = e => { S.proof = e.target.checked; draw(); };
+  $('cR').onchange = e => { S.showR = e.target.checked; draw(); };
+
+  let scrubbing = false;
+  const sl = $('tSlider');
+  sl.addEventListener('pointerdown', () => { scrubbing = true; });
+  window.addEventListener('pointerup', () => { scrubbing = false; });
+  sl.addEventListener('input', e => {
+    S.target = null; S.t = +e.target.value / 1000 * (tEnd() + 0.6);
+    // 對應到最接近的步驟（不改變包絡等勾選）
+    const list = steps(); let k = 0; for (let i=0;i<=S.N;i++) if (list[i].t <= S.t + 1e-6) k = i;
+    if (S.step <= S.N) S.step = k;
+    draw();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (/INPUT|SELECT|TEXTAREA/.test((document.activeElement || {}).tagName || '')) return;
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); $('next').click(); }
+    if (e.key === 'ArrowLeft'){ e.preventDefault(); $('prev').click(); }
+  });
+
+  let last = performance.now();
+  function loop(now){
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (S.target !== null){
+      S.t = Math.min(S.target, S.t + dt * 1.2);   // 子波以慢動作長大
+      if (S.t >= S.target - 1e-9){ S.t = S.target; S.target = null; }
+      draw();
+    }
+    requestAnimationFrame(loop);
+  }
+  window.addEventListener('resize', resize);
+  syncUI(); resize(); applyStep(false); requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
