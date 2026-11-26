@@ -18,10 +18,12 @@ lessons/
   p3-1-0-shm.html              1-0 暖身：簡諧運動是波嗎？
   p3-1-1-traveling-wave.html   1-1 行進波與介質質點的振動
   p3-1-2-periodic-wave.html    1-2 週期波：波長、頻率與波速
+  p3-1-3-superposition.html    1-3 波的重疊原理與干涉
 sims/
   shm.html            模擬：簡諧運動與 y–t 圖（可切換成一排質點）
   traveling-wave.html 模擬：行進波與介質質點（可單獨開啟，也可嵌入單元頁）
-  wave-speed.html     模擬：為什麼 v = fλ（標記波峰、火車比喻、數據紀錄）
+  wave-speed.html     模擬：為什麼 v = fλ（1 秒送出 f 個波、火車比喻、數據紀錄）
+  superposition.html  模擬：波的重疊原理與干涉（兩脈波相遇，Enter 播放、空白鍵逐格）
 assets/
   css/site.css        共用外觀
   js/site.js          共用程式（一般不用改）
