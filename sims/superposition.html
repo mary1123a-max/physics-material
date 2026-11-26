@@ -90,6 +90,7 @@
         <label class="sw"><span class="lab" style="color:#ff3030">紅線</span><span class="opt">隱藏</span><input type="checkbox" id="swR" checked><span class="track"></span><span class="opt">顯示</span></label>
         <label class="sw"><span class="lab" style="color:#2f6bff">藍線</span><span class="opt">隱藏</span><input type="checkbox" id="swB" checked><span class="track"></span><span class="opt">顯示</span></label>
         <label class="sw"><span class="lab" style="color:#9a9a9a">格線</span><span class="opt">隱藏</span><input type="checkbox" id="swG"><span class="track"></span><span class="opt">顯示</span></label>
+        <label class="sw"><span class="lab" style="color:#ffef00">位移</span><span class="opt">隱藏</span><input type="checkbox" id="swY" checked><span class="track"></span><span class="opt">顯示</span></label>
       </div>
     </div>
 
@@ -157,7 +158,7 @@
   const PRESET = {con:[4,4], des:[4,-4]};
   const C = {r:'#ff3b3b', b:'#3d7bff', y:'#ffef00', s:'#ffffff'};
   const S = {mode:'con', A1:4, A2:4, cA1:4, cA2:-2, shape:'sin', view:'split', t:0, playing:false, speed:0.5,
-             showW:true, showR:true, showB:true, showG:false, explain:true, autoPause:true, paused_full:false, showVel:false, sel:30};
+             showW:true, showR:true, showB:true, showG:false, showY:true, explain:true, autoPause:true, paused_full:false, showVel:false, sel:30};
   const $ = id => document.getElementById(id);
   const cv = $('cv'), ctx = cv.getContext('2d');
   let G = {};
@@ -313,9 +314,9 @@
       // 選定質點
       const val = fn(sx, t), Yv = py(val);
       if (ln.k === 's'){
-        if (Math.abs(val) > 0.05) arrow(SX + rBead + 7, py(0), Yv, C.y, 3, 9);
+        if (S.showY && Math.abs(val) > 0.05) arrow(SX + rBead + 7, py(0), Yv, C.y, 3, 9);
         ctx.strokeStyle = C.y; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(SX, Yv, rBead + 4, 0, Math.PI*2); ctx.stroke();
-        if (Math.abs(val) > 0.05) tag('y ＝ ' + sumR(y1(sx,t), y2(sx,t)), SX + rBead + 14, (py(0) + Yv)/2, C.y);
+        if (S.showY && Math.abs(val) > 0.05) tag('y ＝ ' + sumR(y1(sx,t), y2(sx,t)), SX + rBead + 14, (py(0) + Yv)/2, C.y);
         if (!split){
           if (S.showR){ ctx.strokeStyle = C.r; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(SX, py(y1(sx,t)), 5, 0, Math.PI*2); ctx.stroke(); }
           if (S.showB){ ctx.strokeStyle = C.b; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(SX, py(y2(sx,t)), 5, 0, Math.PI*2); ctx.stroke(); }
@@ -356,7 +357,7 @@
   function updateText(){
     const cap = $('caption'); cap.style.display = S.explain ? '' : 'none'; if (S.explain) cap.innerHTML = phaseText();
     const a = y1(S.sel,S.t), b = y2(S.sel,S.t);
-    $('readout').innerHTML = '選定質點（x ＝ ' + S.sel + ' 格）：<span class="w">y</span> ＝ <span class="r">y₁</span> ＋ <span class="bl">y₂</span> ＝ <span class="r">' + sgn(a) + '</span> ＋ <span class="bl">' + sgn(b) + '</span> ＝ <span class="w">' + sumR(a, b) + ' 格</span>';
+    $('readout').innerHTML = '選定質點（x ＝ ' + S.sel + ' 格）：<span class="w">y</span> ＝ <span class="r">y₁</span> ＋ <span class="bl">y₂</span> ＝ <span class="r">' + sgn(a) + '</span> ＋ <span class="bl">' + sgn(b) + '</span> ＝ <span class="w">' + (S.showY ? sumR(a, b) + ' 格' : '？') + '</span>';
     $('tVal').textContent = 't ＝ ' + S.t.toFixed(2) + ' s';
     if (!scrubbing) $('tSlider').value = Math.round(S.t / T_END * 1000);
     $('btnPlay').textContent = S.playing ? '❚❚' : '▶';
@@ -397,7 +398,7 @@
   $('btnBack').onclick = () => step(-1);
   $('btnReset').onclick = restart;
   $('explainBtn').onclick = () => { S.explain = !S.explain; syncUI(); draw(); };
-  [['swW','showW'],['swR','showR'],['swB','showB'],['swG','showG']].forEach(([id,k]) => $(id).onchange = e => { S[k] = e.target.checked; draw(); });
+  [['swW','showW'],['swR','showR'],['swB','showB'],['swG','showG'],['swY','showY']].forEach(([id,k]) => $(id).onchange = e => { S[k] = e.target.checked; draw(); });
   document.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => setMode(b.dataset.mode));
   document.querySelectorAll('[data-shape]').forEach(b => b.onclick = () => { S.shape = b.dataset.shape; syncUI(); draw(); });
   document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => { S.view = b.dataset.view; syncUI(); resize(); });
