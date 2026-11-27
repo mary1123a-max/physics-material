@@ -47,9 +47,10 @@ window.COURSE = {
             { id: "p3-1-3", title: "波的重疊原理與干涉", file: "lessons/p3-1-3-superposition.html", form: "" },
             { id: "p3-1-4", title: "惠更斯原理與繞射", file: "lessons/p3-1-4-huygens.html", form: "" },
             { id: "p3-1-5", title: "用惠更斯原理看反射與折射", file: "lessons/p3-1-5-huygens-refl-refr.html", form: "" },
-            { id: "p3-1-6", title: "波的反射與透射" },
-            { id: "p3-1-7", title: "駐波" },
-            { id: "p3-1-8", title: "水波的干涉" }
+            { id: "p3-1-6", title: "用惠更斯原理看干涉與繞射", file: "lessons/p3-1-6-interference-diffraction.html", form: "" },
+            { id: "p3-1-7", title: "波的反射與透射" },
+            { id: "p3-1-8", title: "駐波" },
+            { id: "p3-1-9", title: "水波的干涉" }
           ]
         },
         { id: "p3-2", title: "聲波", lessons: [] },

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>用惠更斯原理看干涉與繞射</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#f5f7fa;color:#1d2733;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei","Noto Sans TC","Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1040px;margin:0 auto;padding:16px 12px 36px}
+  h1{font-size:1.35rem;margin:4px 0 2px}
+  .sub{color:#6b7785;font-size:.92rem;margin:0 0 12px}
+  .card{background:#fff;border:1px solid #e3e8ee;border-radius:14px;padding:12px 14px;margin-bottom:12px}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .tabs button{appearance:none;border:1px solid #d5dbe2;background:#fff;border-radius:10px;padding:9px 18px;font:inherit;font-size:.98rem;font-weight:800;cursor:pointer;color:#1d2733}
+  .tabs button.on{background:#0a4d6e;border-color:#0a4d6e;color:#ffd34d}
+  .tank{border-radius:12px;overflow:hidden;background:#0c4a6e}
+  canvas{display:block;width:100%}
+  #cv{cursor:crosshair}
+  .caption{margin:10px 0 0;padding:10px 14px;border-radius:10px;background:#0f2433;color:#e9f3f8;font-size:1rem;line-height:1.7}
+  .caption b{color:#ffd34d} .caption .o{color:#ffb35c;font-weight:700} .caption .c{color:#8fd3ff;font-weight:700}
+  .probe{display:grid;grid-template-columns:minmax(220px,1fr) 1.2fr;gap:12px;align-items:center;margin-top:10px;padding:10px 12px;border-radius:10px;background:#101820;color:#e9eef3}
+  .probe .txt{font-size:.95rem;line-height:1.6}
+  .probe .txt b{color:#ffd34d} .probe .r{color:#ff6b6b;font-weight:800} .probe .bl{color:#79b2ff;font-weight:800}
+  .probe canvas{background:#000;border-radius:8px}
+  .note{font-size:.8rem;color:#6b7785;margin:6px 2px 0}
+  .bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+  .btn{appearance:none;border:1px solid #d5dbe2;background:#fff;color:#1d2733;border-radius:10px;padding:8px 14px;font:inherit;font-size:.92rem;font-weight:700;cursor:pointer;min-height:38px}
+  .btn.primary{background:#0a4d6e;border-color:#0a4d6e;color:#fff}
+  .ctl{flex:1 1 200px;min-width:180px}
+  .ctl label{display:flex;justify-content:space-between;font-size:.86rem;color:#6b7785}
+  .ctl label b{color:#1d2733;font-variant-numeric:tabular-nums}
+  .ctl input[type=range]{width:100%;height:26px;accent-color:#0a4d6e}
+  .checks{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.9rem;margin-top:10px;padding-top:10px;border-top:1px dashed #e3e8ee}
+  .checks label{display:flex;align-items:center;gap:6px;cursor:pointer}
+  .checks input{width:18px;height:18px;accent-color:#0a4d6e}
+  .sw{display:inline-block;width:22px;height:0;border-top:3px solid;vertical-align:middle}
+  @media (max-width:640px){ .probe{grid-template-columns:1fr} }
+  html.embedded .standalone-only{display:none}
+  html.embedded body{background:transparent}
+  html.embedded .wrap{padding:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="standalone-only">用惠更斯原理看干涉與繞射</h1>
+  <p class="sub standalone-only">狹縫就是子波源。子波相遇，有的地方加強、有的地方抵消。</p>
+
+  <div class="card">
+    <div class="tabs">
+      <button data-mode="double" class="on">雙狹縫干涉</button>
+      <button data-mode="single">單縫繞射</button>
+    </div>
+    <div class="tank"><canvas id="cv" aria-label="水波槽俯視圖：平面波通過狹縫"></canvas></div>
+    <div class="caption" id="caption"></div>
+    <div class="probe" id="probe">
+      <div class="txt" id="probeTxt"></div>
+      <canvas id="pc" aria-label="選定點上兩個子波與合成的振動"></canvas>
+    </div>
+    <p class="note" id="note"></p>
+  </div>
+
+  <div class="card">
+    <div class="bar">
+      <button class="btn primary" id="play">❚❚ 暫停</button>
+      <button class="btn" id="restart">↺ 重新開始</button>
+      <div class="ctl"><label>波長 λ <b id="vL"></b></label><input type="range" id="lam" min="2" max="6" step="0.5"></div>
+      <div class="ctl" data-only="double"><label>兩狹縫的間距 d <b id="vD"></b></label><input type="range" id="d" min="2" max="16" step="0.5"></div>
+      <div class="ctl" data-only="single"><label>縫寬 a <b id="vA"></b></label><input type="range" id="a" min="0.5" max="20" step="0.5"></div>
+      <div class="ctl"><label>播放速度 <b id="vS"></b></label><input type="range" id="speed" min="0.25" max="1.5" step="0.25"></div>
+    </div>
+    <div class="checks">
+      <label><input type="checkbox" id="cField" checked> 水波</label>
+      <label data-only="double"><input type="checkbox" id="cCirc" checked> 子波的波峰 <span class="sw" style="border-color:#ff9f1a"></span> 與波谷 <span class="sw" style="border-color:#8fd3ff;border-top-style:dashed"></span></label>
+      <label data-only="single"><input type="checkbox" id="cCirc1"> 畫出縫中 3 個子波的波峰</label>
+      <label data-only="double"><input type="checkbox" id="cLines"> 加強線與抵消線</label>
+      <label><input type="checkbox" id="cSrc" checked> 子波源（橘點）</label>
+      <label><input type="checkbox" id="cStrip" checked> 右側的振動強度</label>
+    </div>
+  </div>
+</div>
+
+<script>
+/* 被嵌入單元頁時：隱藏標題並回報高度給外層頁面 */
+(function(){
+  if (window.parent === window) return;
+  document.documentElement.classList.add("embedded");
+  const send = () => window.parent.postMessage({type:"sim-height", h: document.documentElement.scrollHeight}, "*");
+  window.addEventListener("load", send);
+  if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+})();
+
+(function(){
+  const WX = 60, WY = 40, V = 4, WALL = 12, CY = 20, TAU = Math.PI*2, STRIP = 2.6;
+  const S = {mode:'double', lam:3, d:7, a:3, t:0, playing:true, speed:1,
+             field:true, circ:true, circ1:false, lines:false, src:true, strip:true, probe:{x:40, y:20}};
+  const $ = id => document.getElementById(id);
+  const cv = $('cv'), ctx = cv.getContext('2d'), pc = $('pc'), pctx = pc.getContext('2d');
+  const off = document.createElement('canvas'), octx = off.getContext('2d');
+  let G = {}, img, F = null;
+  const k = () => TAU / S.lam, w = () => TAU * V / S.lam;
+
+  /* ---------- 版面 ---------- */
+  function resize(){
+    const dpr = window.devicePixelRatio || 1;
+    const wpx = cv.parentElement.clientWidth, hpx = Math.round(wpx * WY / WX);
+    cv.style.height = hpx + 'px'; cv.width = Math.round(wpx*dpr); cv.height = Math.round(hpx*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    const gw = Math.max(150, Math.min(300, Math.round(wpx / 3))), gh = Math.round(gw * WY / WX);
+    off.width = gw; off.height = gh; img = octx.createImageData(gw, gh);
+    G = {w:wpx, h:hpx, gw, gh, u: wpx / WX};
+    G.X = new Float32Array(gw); for (let i=0;i<gw;i++) G.X[i] = (i+0.5)*WX/gw;
+    G.Y = new Float32Array(gh); for (let j=0;j<gh;j++) G.Y[j] = (j+0.5)*WY/gh;
+    const pw = pc.parentElement.clientWidth * 0.55 || 360, ph = 110;
+    pc.style.height = ph + 'px'; pc.style.width = '100%';
+    pc.width = Math.round(pc.clientWidth * dpr || pw*dpr); pc.height = Math.round(ph*dpr); pctx.setTransform(dpr,0,0,dpr,0,0);
+    F = null; draw();
+  }
+  const sx = X => X * G.u, sy = Y => Y * G.u;
+
+  /* ---------- 狹縫與子波源 ---------- */
+  function layout(){
+    if (S.mode === 'double'){
+      const y1 = CY - S.d/2, y2 = CY + S.d/2;
+      return {srcs:[{y:y1, wt:1}, {y:y2, wt:1}], opens:[[y1-0.35, y1+0.35], [y2-0.35, y2+0.35]], obl:false};
+    }
+    const a = S.a, ds = Math.min(0.4, S.lam/6), n = Math.max(1, Math.ceil(a/ds)), step = a/n, srcs = [];
+    for (let i=0;i<n;i++) srcs.push({y: CY - a/2 + (i+0.5)*step, wt: step * Math.sqrt(k()/TAU)});
+    return {srcs, opens:[[CY - a/2, CY + a/2]], obl:true};
+  }
+  function precompute(){
+    const L = layout(), {gw, gh} = G, K = k();
+    const Ur = new Float32Array(gw*gh), Ui = new Float32Array(gw*gh), Rm = new Float32Array(gw*gh).fill(1e9);
+    const mags = [];
+    for (let j=0;j<gh;j++){
+      const Y = G.Y[j];
+      for (let i=0;i<gw;i++){
+        const X = G.X[i]; if (X <= WALL) continue;
+        const dx = X - WALL; let re = 0, im = 0, rmin = 1e9;
+        for (const s of L.srcs){
+          const dy = Y - s.y, r = Math.sqrt(dx*dx + dy*dy), rr = Math.max(r, 0.3);
+          const a = s.wt / Math.sqrt(rr) * (L.obl ? (1 + dx/rr) / 2 : 1);
+          re += a * Math.cos(K*r); im += a * Math.sin(K*r); if (r < rmin) rmin = r;
+        }
+        const p = j*gw + i; Ur[p] = re; Ui[p] = im; Rm[p] = rmin;
+        if (rmin > 1.5 && (i + j) % 3 === 0) mags.push(Math.hypot(re, im));
+      }
+    }
+    mags.sort((a,b) => a-b);
+    const p90 = mags.length ? mags[Math.floor(mags.length*0.9)] : 1;
+    // 右側強度條：取 x = WX - STRIP/2 那一欄的振幅
+    const col = Math.min(gw-1, Math.floor((WX - STRIP/2) / WX * gw)), amp = new Float32Array(gh); let mx = 1e-9;
+    for (let j=0;j<gh;j++){ const p = j*gw + col; amp[j] = Math.hypot(Ur[p], Ui[p]); mx = Math.max(mx, amp[j]); }
+    for (let j=0;j<gh;j++) amp[j] /= mx;
+    F = {L, Ur, Ui, Rm, amp, col, scale: Math.min(8, Math.max(0.4, (S.mode === 'single' ? 0.75 : 0.9) / Math.max(p90, 1e-6)))};
+  }
+
+  function paint(p, v){
+    v = Math.tanh(1.3 * v) / 0.862; v = Math.max(-1, Math.min(1, v));
+    const t = (v + 1) / 2; let r = 10 + 150*t, g = 62 + 160*t, b = 98 + 150*t;
+    if (v > 0.88){ const h = (v - 0.88) / 0.12; r += (255-r)*h; g += (255-g)*h; b += (255-b)*h; }
+    const q = p*4; img.data[q] = r; img.data[q+1] = g; img.data[q+2] = b; img.data[q+3] = 255;
+  }
+
+  /* ---------- 繪圖 ---------- */
+  function draw(){
+    if (!G.w) return;
+    if (!F) precompute();
+    const {gw, gh} = G, K = k(), W = w(), t = S.t;
+    const th = K*WALL - W*t, c = Math.cos(th), s = Math.sin(th), front = V*t - WALL;
+    if (S.field){
+      for (let i=0;i<gw;i++){
+        const X = G.X[i], vl = X < V*t ? Math.cos(K*X - W*t) : 0;
+        for (let j=0;j<gh;j++){
+          const p = j*gw + i;
+          if (X <= WALL) paint(p, vl);
+          else paint(p, F.Rm[p] < front ? F.scale * (F.Ur[p]*c - F.Ui[p]*s) : 0);
+        }
+      }
+      octx.putImageData(img, 0, 0); ctx.imageSmoothingEnabled = true; ctx.drawImage(off, 0, 0, G.w, G.h);
+    } else { ctx.fillStyle = '#0b2638'; ctx.fillRect(0, 0, G.w, G.h); }
+
+    const L = F.L;
+    // 加強線與抵消線（雙狹縫）
+    if (S.mode === 'double' && S.lines && front > 0) drawLines(Math.min(front, 80));
+    // 子波的波峰與波谷
+    if (S.mode === 'double' && S.circ) drawCircles(L.srcs, front, true);
+    if (S.mode === 'single' && S.circ1){
+      const picks = L.srcs.length >= 3 ? [L.srcs[0], L.srcs[Math.floor(L.srcs.length/2)], L.srcs[L.srcs.length-1]] : L.srcs;
+      drawCircles(picks, front, false);
+    }
+    drawWall(L);
+    if (S.src) drawSources(L);
+    if (V*t < WALL) label('平面波 →', sx(Math.max(1, V*t - 8)), 16, '#fff');
+    if (S.strip) drawStrip(front);
+    if (S.mode === 'double') drawProbeMark();
+    updateText();
+    if (S.mode === 'double') drawProbeGraph();
+  }
+  function drawWall(L){
+    const x1 = sx(WALL - 0.35), x2 = sx(WALL + 0.35); let y = 0;
+    ctx.fillStyle = '#c9d2da';
+    for (const [a,b] of L.opens){ if (a > y) ctx.fillRect(x1, sy(y), x2-x1, sy(a)-sy(y)); y = Math.max(y, b); }
+    if (y < WY) ctx.fillRect(x1, sy(y), x2-x1, sy(WY)-sy(y));
+  }
+  function drawSources(L){
+    const reached = V*S.t >= WALL, pulse = reached ? Math.max(0, Math.cos(k()*WALL - w()*S.t)) : 0, dense = L.srcs.length > 6;
+    ctx.fillStyle = '#ff9f1a'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+    for (const s of L.srcs){
+      const r = (dense ? 2 : 4.5) + (reached ? (dense ? 1.5 : 3) * pulse : 0);
+      ctx.beginPath(); ctx.arc(sx(WALL), sy(s.y), r, 0, TAU); ctx.fill(); if (!dense) ctx.stroke();
+    }
+    if (S.mode === 'double'){ label('狹縫 1', sx(WALL) - 8, sy(L.srcs[0].y), '#ffd9a8', 'right'); label('狹縫 2', sx(WALL) - 8, sy(L.srcs[1].y), '#ffd9a8', 'right'); }
+  }
+  function drawCircles(srcs, front, withTrough){
+    if (front <= 0) return;
+    ctx.save(); ctx.beginPath(); ctx.rect(sx(WALL), 0, sx(WX - (S.strip ? STRIP : 0)) - sx(WALL), G.h); ctx.clip();
+    for (let m=0; ; m++){
+      const rc = front - m*S.lam; if (rc <= 0) break;
+      ctx.strokeStyle = 'rgba(255,159,26,.9)'; ctx.lineWidth = 1.8; ctx.setLineDash([]);
+      for (const s of srcs){ ctx.beginPath(); ctx.arc(sx(WALL), sy(s.y), rc*G.u, -Math.PI/2, Math.PI/2); ctx.stroke(); }
+      const rt = rc - S.lam/2;
+      if (withTrough && rt > 0){
+        ctx.strokeStyle = 'rgba(143,211,255,.85)'; ctx.lineWidth = 1.4; ctx.setLineDash([5,4]);
+        for (const s of srcs){ ctx.beginPath(); ctx.arc(sx(WALL), sy(s.y), rt*G.u, -Math.PI/2, Math.PI/2); ctx.stroke(); }
+        ctx.setLineDash([]);
+      }
+      if (m > 40) break;
+    }
+    ctx.restore();
+  }
+  /* 加強線：到兩狹縫距離差＝整數個波長；抵消線：差＝整數＋半個波長 */
+  function drawLines(maxR){
+    const d = S.d, y1 = CY - d/2;
+    const trace = delta => {
+      const pts = [];
+      for (let s = Math.max(0, -delta) + 0.05; s < maxR + 2; s += 0.25){
+        const a = s + delta, b = s, p = (a*a - b*b + d*d) / (2*d), h2 = a*a - p*p;
+        if (h2 < 0) continue;
+        const X = WALL + Math.sqrt(h2), Y = y1 + p;
+        if (Math.min(Math.hypot(X - WALL, Y - y1), Math.hypot(X - WALL, Y - y1 - d)) > maxR) break;
+        pts.push([X, Y]);
+      }
+      return pts;
+    };
+    ctx.save(); ctx.beginPath(); ctx.rect(sx(WALL), 0, sx(WX - (S.strip ? STRIP : 0)) - sx(WALL), G.h); ctx.clip();
+    const M = Math.floor(d / S.lam + 1e-9);
+    for (let m = -M; m <= M; m++){
+      const pts = trace(m * S.lam); if (pts.length < 2) continue;
+      ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.lineWidth = 2.5; ctx.setLineDash([]);
+      ctx.beginPath(); pts.forEach((q,i) => i ? ctx.lineTo(sx(q[0]), sy(q[1])) : ctx.moveTo(sx(q[0]), sy(q[1]))); ctx.stroke();
+    }
+    for (let m = -M - 1; m <= M; m++){
+      const delta = (m + 0.5) * S.lam; if (Math.abs(delta) >= d) continue;
+      const pts = trace(delta); if (pts.length < 2) continue;
+      ctx.strokeStyle = 'rgba(0,0,0,.85)'; ctx.lineWidth = 2.5; ctx.setLineDash([7,5]);
+      ctx.beginPath(); pts.forEach((q,i) => i ? ctx.lineTo(sx(q[0]), sy(q[1])) : ctx.moveTo(sx(q[0]), sy(q[1]))); ctx.stroke();
+    }
+    ctx.setLineDash([]); ctx.restore();
+  }
+  function drawStrip(front){
+    const x0 = sx(WX - STRIP), wpx = G.w - x0;
+    ctx.fillStyle = '#000'; ctx.fillRect(x0, 0, wpx, G.h);
+    const rowH = G.h / G.gh;
+    for (let j=0;j<G.gh;j++){
+      const p = j*G.gw + F.col, arrived = F.Rm[p] < front;
+      if (!arrived) continue;
+      const v = Math.pow(F.amp[j], 1.2), c = Math.round(255 * v);
+      ctx.fillStyle = 'rgb(' + c + ',' + c + ',' + Math.round(c*0.85) + ')';
+      ctx.fillRect(x0 + 2, j*rowH, wpx - 2, rowH + 1);
+    }
+    ctx.strokeStyle = '#9aa6b2'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x0, 0); ctx.lineTo(x0, G.h); ctx.stroke();
+    ctx.save(); ctx.translate(x0 - 8, G.h/2); ctx.rotate(-Math.PI/2);
+    ctx.font = '700 12px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.strokeText('右邊緣的振動強度（亮＝振動大）→', 0, 0);
+    ctx.fillStyle = '#fff'; ctx.fillText('右邊緣的振動強度（亮＝振動大）→', 0, 0); ctx.restore();
+  }
+  function label(text, x, y, color, align){
+    ctx.font = '700 13px system-ui, sans-serif'; ctx.textAlign = align || 'left'; ctx.textBaseline = 'middle';
+    ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,.65)'; ctx.strokeText(text, x, y);
+    ctx.fillStyle = color; ctx.fillText(text, x, y);
+  }
+
+  /* ---------- 選定點：兩個子波在這裡同步還是相反 ---------- */
+  function probeData(){
+    const L = F.L, P = S.probe, K = k();
+    const r = L.srcs.map(s => Math.hypot(P.x - WALL, P.y - s.y));
+    const A = r.map(x => 1 / Math.sqrt(Math.max(x, 0.3))), Am = Math.max(A[0], A[1]);
+    return {r, A: A.map(a => a / Am), dphi: K * (r[1] - r[0]), arrived: V*S.t - WALL > Math.max(r[0], r[1])};
+  }
+  function drawProbeMark(){
+    const P = S.probe, L = F.L;
+    if (S.circ){ ctx.strokeStyle = 'rgba(255,107,107,.7)'; ctx.setLineDash([2,4]); ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(sx(WALL), sy(L.srcs[0].y)); ctx.lineTo(sx(P.x), sy(P.y)); ctx.stroke();
+      ctx.strokeStyle = 'rgba(121,178,255,.8)';
+      ctx.beginPath(); ctx.moveTo(sx(WALL), sy(L.srcs[1].y)); ctx.lineTo(sx(P.x), sy(P.y)); ctx.stroke(); ctx.setLineDash([]); }
+    ctx.strokeStyle = '#ffef00'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(sx(P.x), sy(P.y), 9, 0, TAU); ctx.stroke();
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(sx(P.x), sy(P.y), 11, 0, TAU); ctx.stroke();
+  }
+  function drawProbeGraph(){
+    const wpx = pc.clientWidth, hpx = 110, D = probeData(), K = k(), W = w();
+    pctx.clearRect(0,0,wpx,hpx);
+    const top = 20, mid = top + (hpx - top)/2, ys = ((hpx - top)/2 - 4) / 2.05, T = S.lam / V, span = 2*T;
+    pctx.strokeStyle = 'rgba(255,255,255,.2)'; pctx.beginPath(); pctx.moveTo(0, mid); pctx.lineTo(wpx, mid); pctx.stroke();
+    if (!D.arrived){ pctx.fillStyle = '#9aa6b2'; pctx.font = '600 13px system-ui'; pctx.textAlign = 'center'; pctx.fillText('兩個子波都還沒傳到這一點', wpx/2, mid - 10); return; }
+    const curve = (fn, color, width, dash) => {
+      pctx.strokeStyle = color; pctx.lineWidth = width; pctx.setLineDash(dash || []); pctx.beginPath();
+      for (let i=0;i<=wpx;i+=2){ const tt = S.t - span + span*i/wpx, y = mid - fn(tt)*ys; i ? pctx.lineTo(i, y) : pctx.moveTo(i, y); }
+      pctx.stroke(); pctx.setLineDash([]);
+    };
+    const y1 = tt => D.A[0] * Math.cos(K*(WALL + D.r[0]) - W*tt), y2 = tt => D.A[1] * Math.cos(K*(WALL + D.r[1]) - W*tt);
+    curve(y1, '#ff4d4d', 2, [6,4]); curve(y2, '#4d8dff', 2, [2,3]); curve(tt => y1(tt) + y2(tt), '#ffffff', 3);
+    pctx.font = '700 11px system-ui'; pctx.textAlign = 'left';
+    pctx.fillStyle = '#ff6b6b'; pctx.fillText('來自狹縫 1', 6, 12);
+    pctx.fillStyle = '#79b2ff'; pctx.fillText('來自狹縫 2', 80, 12);
+    pctx.fillStyle = '#fff'; pctx.fillText('合成（實際的振動）', 154, 12);
+    pctx.textAlign = 'right'; pctx.fillStyle = '#9aa6b2'; pctx.fillText('現在 →', wpx - 4, 12);
+  }
+
+  /* ---------- 文字 ---------- */
+  function caption(){
+    if (S.mode === 'double') return '兩條狹縫各像一顆新的石頭，發出兩組圓形<b>子波</b>（<span class="o">橘色實線＝波峰</span>、<span class="c">藍色虛線＝波谷</span>）。' +
+      '<b>波峰遇到波峰、波谷遇到波谷</b>：互相加強，振動特別大。<b>波峰遇到波谷</b>：互相抵消，水面幾乎不動。' +
+      '加強的地方和抵消的地方排成一條條從狹縫向外散開的線，這就是<b>干涉</b>。試著改變狹縫間距和波長，看看這些線變密還是變疏。';
+    const r = S.a / S.lam;
+    return '縫寬 a 約 <b>' + r.toFixed(1) + ' 個波長</b>。縫裡的<b>每一點</b>都是子波源（橘點）。' + (r < 1.2
+      ? '縫很窄，所有子波源擠在一起，整條縫就像一個子波源，波穿過後向四面八方散開，右邊幾乎處處都在振動。'
+      : r < 3 ? '縫和波長差不多，波穿過後明顯向兩側散開。'
+      : '縫比較寬，正前方的子波彼此合成直的波前；但在某些斜的方向上，縫中不同位置傳來的子波會一個是波峰、一個是波谷而互相抵消，所以右邊的強度出現<b>暗處</b>。縫越寬，波越集中在正前方。') +
+      ' 這種波通過狹縫後散開的現象叫<b>繞射</b>，它其實也是許多子波彼此干涉的結果。';
+  }
+  function updateText(){
+    $('caption').innerHTML = caption();
+    $('probe').style.display = S.mode === 'double' ? '' : 'none';
+    if (S.mode === 'double'){
+      const D = probeData(), c = Math.abs(Math.cos(D.dphi / 2));
+      let verdict = '';
+      if (!D.arrived) verdict = '等一下，兩個子波都傳到之後再看。';
+      else if (c > 0.92) verdict = '兩個子波<b>步調一致</b>（波峰同時到、波谷同時到）→ 合成的振動特別大：<b>加強</b>。';
+      else if (c < 0.3) verdict = '兩個子波<b>步調相反</b>（一個是波峰時，另一個是波谷）→ 合成後幾乎不動：<b>抵消</b>。';
+      else verdict = '兩個子波的步調介於一致和相反之間，合成的振動中等。';
+      $('probeTxt').innerHTML = '<b>點一下水面</b>，選一個位置（黃圈）。右邊是這一點上，<span class="r">狹縫 1</span> 和 <span class="bl">狹縫 2</span> 傳來的子波各自造成的振動，以及合成後實際的振動（白線）。<br>' + verdict;
+    }
+    $('note').textContent = '畫面假設牆會吸收撞上的波（實際的牆會反射）。水波亮度已自動調整，方便觀察。' + (S.mode === 'double' ? ' 為了看清楚，兩條狹縫畫得非常窄。' : '');
+    $('play').textContent = S.playing ? '❚❚ 暫停' : '▶ 播放';
+  }
+
+  /* ---------- 控制 ---------- */
+  function syncUI(){
+    document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('on', b.dataset.mode === S.mode));
+    document.querySelectorAll('[data-only]').forEach(el => el.style.display = el.dataset.only === S.mode ? '' : 'none');
+    $('lam').value = S.lam; $('vL').textContent = S.lam.toFixed(1);
+    $('d').value = S.d; $('vD').textContent = S.d.toFixed(1);
+    $('a').value = S.a; $('vA').textContent = S.a.toFixed(1) + '（約 ' + (S.a / S.lam).toFixed(1) + ' λ）';
+    $('speed').value = S.speed; $('vS').textContent = S.speed + '×';
+  }
+  function restart(){ S.t = 0; S.playing = true; last = performance.now(); draw(); }
+  document.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { S.mode = b.dataset.mode; F = null; syncUI(); resize(); restart(); });
+  $('play').onclick = () => { S.playing = !S.playing; last = performance.now(); updateText(); };
+  $('restart').onclick = restart;
+  $('lam').oninput = e => { S.lam = +e.target.value; F = null; syncUI(); draw(); };
+  $('d').oninput = e => { S.d = +e.target.value; F = null; syncUI(); draw(); };
+  $('a').oninput = e => { S.a = +e.target.value; F = null; syncUI(); draw(); };
+  $('speed').oninput = e => { S.speed = +e.target.value; syncUI(); };
+  [['cField','field'],['cCirc','circ'],['cCirc1','circ1'],['cLines','lines'],['cSrc','src'],['cStrip','strip']].forEach(([id,key]) => $(id).onchange = e => { S[key] = e.target.checked; draw(); });
+  cv.addEventListener('pointerdown', e => {
+    if (S.mode !== 'double') return;
+    const r = cv.getBoundingClientRect(), X = (e.clientX - r.left) / r.width * WX, Y = (e.clientY - r.top) / r.height * WY;
+    if (X > WALL + 1 && X < WX - STRIP){ S.probe = {x:X, y:Y}; draw(); }
+  });
+
+  let last = performance.now();
+  function loop(now){
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (S.playing){ S.t += dt * S.speed; draw(); }
+    requestAnimationFrame(loop);
+  }
+  window.addEventListener('resize', resize);
+  syncUI(); resize(); requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

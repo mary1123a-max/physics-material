@@ -21,6 +21,7 @@ lessons/
   p3-1-3-superposition.html    1-3 波的重疊原理與干涉
   p3-1-4-huygens.html          1-4 惠更斯原理與繞射
   p3-1-5-huygens-refl-refr.html 1-5 用惠更斯原理看反射與折射
+  p3-1-6-interference-diffraction.html 1-6 用惠更斯原理看干涉與繞射
 sims/
   shm.html            模擬：簡諧運動與 y–t 圖（可切換成一排質點）
   traveling-wave.html 模擬：行進波與介質質點（可單獨開啟，也可嵌入單元頁）
@@ -28,6 +29,7 @@ sims/
   superposition.html  模擬：波的重疊原理與干涉（兩脈波相遇，Enter 播放、空白鍵逐格）
   huygens.html        模擬：惠更斯原理（石頭 → 小洞 → 多洞 → 拿掉牆 → 繞射，五個步驟）
   huygens-refl-refr.html 模擬：用惠更斯原理推導反射與折射定律（逐步看子波長大）
+  interference-diffraction.html 模擬：雙狹縫干涉（可調間距）與單縫繞射（可調縫寬），定性觀察
 assets/
   css/site.css        共用外觀
   js/site.js          共用程式（一般不用改）

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>用惠更斯原理看干涉與繞射</title>
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body data-page="lesson" data-root=".." data-lesson="p3-1-6">
+<main class="wrap">
+
+  <div class="lesson-head">
+    <div class="breadcrumb" id="breadcrumb"></div>
+    <h1>用惠更斯原理看干涉與繞射</h1>
+    <p class="lead">同一個想法「每一點都是子波源」，再加上 1-3 的重疊原理，就能看懂干涉和繞射。這一節先求「看懂」，定量計算留到後面的章節。</p>
+  </div>
+
+  <!-- ===== 開場提問（要修改文字，直接改這一段） ===== -->
+  <section class="think">
+    <h2>🤔 先想想：牆上開兩個小洞</h2>
+    <p style="margin:0 0 6px">1-4 節看過：平面波遇到牆上的一個小洞，牆後會出現以小洞為中心的圓形波。如果牆上開<b>兩個</b>小洞呢？</p>
+    <p style="margin:0">（A）牆後的水面會比只有一個洞時振動得更大，而且到處都一樣大<br>
+    （B）兩組圓形波會互相碰撞、反彈<br>
+    （C）有些地方振動特別大，有些地方幾乎不動，排成規則的圖案<br>
+    （D）兩組波會合成一個以兩洞中點為中心的圓形波</p>
+    <p class="small muted" style="margin:6px 0 0">提示：想一想 1-3 節兩個脈波重疊時發生的事。</p>
+  </section>
+
+  <section class="card">
+    <h2>🎯 學習目標</h2>
+    <ol class="goals">
+      <li>把雙狹縫看成兩個子波源，用「波峰遇波峰、波峰遇波谷」說明干涉的加強與抵消。</li>
+      <li>觀察狹縫間距與波長改變時，干涉圖案怎麼變。</li>
+      <li>把單縫看成許多子波源，說明縫寬與波長如何影響繞射。</li>
+      <li>體會惠更斯原理可以同時解釋反射、折射、干涉與繞射。</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>🔬 互動實驗：狹縫就是子波源</h2>
+    <p class="small muted" style="margin-top:0">先做「雙狹縫干涉」，再做「單縫繞射」。水波亮的是波峰、暗的是波谷；最右邊的條狀區顯示右邊緣各處振動的大小，亮代表振動大。</p>
+    <iframe class="sim-frame" src="../sims/interference-diffraction.html" title="用惠更斯原理看干涉與繞射" loading="lazy"></iframe>
+    <div class="sim-actions"><a class="btn" href="../sims/interference-diffraction.html" target="_blank" rel="noopener">在新分頁開啟模擬（適合投影） ↗</a></div>
+  </section>
+
+  <section class="card">
+    <h2>🧭 操作與討論</h2>
+    <p class="small muted" style="margin-top:0">先自己回答，再點開對照。</p>
+
+    <h3>雙狹縫干涉</h3>
+    <details class="guide"><summary>1. 用惠更斯原理來看，兩條狹縫各扮演什麼角色？</summary>
+      <div class="hint">平面波打到牆上，只有兩條狹縫能把振動傳過去。牆後的水只感覺到這兩點在振動，所以兩條狹縫就是兩個子波源，各自發出一組圓形子波。兩條狹縫被同一道波前同時碰到，所以兩個子波源的步調一致。</div></details>
+    <details class="guide"><summary>2. 找一個橘色實線和橘色實線交叉的地方，和一個橘色實線和藍色虛線交叉的地方。這兩處的水面各在做什麼？</summary>
+      <div class="hint">波峰和波峰交叉（或波谷和波谷）：兩個子波的位移相加，振動特別大，這是<b>建設性干涉</b>。波峰和波谷交叉：一正一負互相抵消，水面幾乎不動，這是<b>破壞性干涉</b>。這就是 1-3 節的重疊原理 y = y₁ + y₂。答案是（C）。</div></details>
+    <details class="guide"><summary>3. 點一下水面上的不同位置，看右邊的小圖。什麼時候白線（合成）特別大？什麼時候幾乎是平的？</summary>
+      <div class="hint">兩個子波步調一致（紅、藍同時到波峰）時，白線振幅最大；步調相反（一個在波峰、另一個在波谷）時，白線幾乎是平的。正中央那條線上，到兩條狹縫的距離相等，兩個子波一定同時到達，所以永遠是加強。</div></details>
+    <details class="guide"><summary>4. 打開「加強線與抵消線」。這些線長什麼樣子？和右側的振動強度條有什麼對應？</summary>
+      <div class="hint">白色實線（加強線）和黑色虛線（抵消線）交錯排列，從兩條狹縫之間向外散開。加強線碰到右邊緣的地方，強度條是亮的；抵消線碰到的地方是暗的。</div></details>
+    <details class="guide"><summary>5. 把狹縫間距 d 調大，加強線變多還是變少？把波長 λ 調長呢？</summary>
+      <div class="hint">d 變大：加強線變多、變密。λ 變長：加強線變少、變疏。為什麼會這樣、怎麼算出線的位置，後面的章節會再定量討論。</div></details>
+
+    <h3>單縫繞射</h3>
+    <details class="guide"><summary>6. 單縫裡有幾個子波源？</summary>
+      <div class="hint">縫裡的<b>每一點</b>都是子波源（畫面上的一排橘點），縫越寬，子波源越多。</div></details>
+    <details class="guide"><summary>7. 把縫寬調到比一個波長還窄。波穿過後是什麼形狀？右邊的強度條有什麼特徵？</summary>
+      <div class="hint">接近圓形波，向四面八方散開，右邊緣幾乎處處都在振動。縫很窄時，所有子波源擠在一起，整條縫就像一個子波源，和 1-4 節的小洞一樣。</div></details>
+    <details class="guide"><summary>8. 把縫寬調到 4 個波長以上。波主要往哪裡走？強度條出現了什麼？</summary>
+      <div class="hint">波主要集中在正前方，兩側出現暗處。在某些斜的方向上，縫中不同位置傳來的子波一個是波峰、一個是波谷，互相抵消，所以那裡很暗。勾選「畫出縫中 3 個子波的波峰」可以看到不同子波源的波峰交錯的情形。</div></details>
+    <details class="guide"><summary>9. 雙狹縫干涉和單縫繞射，其實是同一件事嗎？</summary>
+      <div class="hint">本質相同：都是好幾個子波重疊，有的地方加強、有的地方抵消。雙狹縫是「兩個」子波源的干涉；單縫是縫中「無數個」子波源的干涉。習慣上，少數幾個波源的情形稱為干涉，連續一整片波源的情形稱為繞射。</div></details>
+  </section>
+
+  <section class="card">
+    <h2>📘 觀念整理：惠更斯原理一次看懂四件事</h2>
+    <table class="compare">
+      <tr><th>現象</th><th>子波源在哪裡</th><th>關鍵</th></tr>
+      <tr><td>反射（1-5）</td><td>界面上依序被碰到的點</td><td>子波在同一介質長大，速率相同 → θ₁ = θ₁′</td></tr>
+      <tr><td>折射（1-5）</td><td>界面上依序被碰到的點</td><td>子波在另一介質長大，速率不同 → sin θ₁ ／ sin θ₂ = v₁ ／ v₂</td></tr>
+      <tr><td>干涉</td><td>兩條狹縫（兩個子波源）</td><td>子波重疊：波峰遇波峰加強，波峰遇波谷抵消</td></tr>
+      <tr><td>繞射</td><td>縫中的每一點（許多子波源）</td><td>窄縫 ≈ 一個子波源，波向四周散開；寬縫中各子波在某些方向互相抵消</td></tr>
+    </table>
+    <div class="key">兩個步調一致的波源發出的波重疊時，有些地方永遠加強、有些地方永遠抵消，排成固定的圖案，這就是<b>干涉</b>。</div>
+    <div class="key">波通過狹縫或繞過障礙物時會散開，縫寬越接近或小於波長，散開越明顯，這就是<b>繞射</b>。繞射也是許多子波干涉的結果。</div>
+    <p class="small muted" style="margin-bottom:0">定性觀察：雙狹縫的間距越大，干涉的加強線越密；波長越長，加強線越疏。單縫越窄，波散得越開。這些關係的定量計算，會在後面的章節再學。</p>
+  </section>
+
+  <section class="card">
+    <h2>✏️ 檢核練習</h2>
+    <div data-quiz="p3-1-6"></div>
+  </section>
+
+  <section class="assign" id="assignment"></section>
+  <section class="card understood" id="understood"></section>
+  <nav class="pager" id="pager"></nav>
+</main>
+<script src="../data/course.js"></script>
+<script src="../data/questions.js"></script>
+<script src="../assets/js/site.js"></script>
+</body>
+</html>
